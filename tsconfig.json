@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "sourceMap": true,
+        // "outDir": "lib/js",
+        "typeRoots": ["./typings/modules", "./typings/globals"],
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "alwaysStrict": true
+    },
+    "include":[
+        "src/**/*"
+    ]
+}

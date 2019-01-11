@@ -1,0 +1,9 @@
+{
+  "title": "Yagura",
+  "url" : "{{url}}",
+
+  "header": {
+    "title": "Introduction",
+    "filename": "docs/header.md"
+  }
+}
