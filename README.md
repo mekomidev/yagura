@@ -33,7 +33,7 @@ The same principle can also be applied app-wide, where you can stack "extensions
 
 ### Security Issues
 
-If you discover a security vulnerability in Yagura, please see [Security Policies and Procedures](Security.md).
+If you discover a security vulnerability in Yagura, please see [Security Policies and Procedures](SECURITY.md).
 
 ## Quick Start
 
