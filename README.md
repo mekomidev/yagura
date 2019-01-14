@@ -69,7 +69,7 @@ $ npm test
 
 The original author of Yagura is [James Kerber](https://github.com/kerberjg)
 
-[List of all contributors](https://github.com/expressjs/express/graphs/contributors)
+[List of all contributors](https://github.com/mekomidev/yagura/graphs/contributors)
 
 ## License
 
