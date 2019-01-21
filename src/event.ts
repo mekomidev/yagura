@@ -1,4 +1,4 @@
-import { Yagura } from ".";
+import { Yagura } from "./yagura";
 import { deepFreeze } from "./utils/objectUtils";
 
 export abstract class YaguraEvent {
