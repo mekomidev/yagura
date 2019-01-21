@@ -1,4 +1,3 @@
-import { Model } from '../model';
 import { HttpRequest } from './http.strategy';
 
 export type HttpRouteCallback = (event: HttpRequest) => Promise<void>;
@@ -55,7 +54,7 @@ export class HttpRoute {
     public delete(cb: HttpRouteCallback) {}
 
     /**
-     * Mount the Model on current route and attach CRUD handlers/subroutes
+     * Mount a model with CrudAdapter on current route and attach CRUD handlers/subroutes
      * All error handling is taken care of according to HTTP REST API standards
      *
      * Example:
@@ -65,9 +64,9 @@ export class HttpRoute {
      *  PUT .../id      => model.update(id, data);
      *  DELETE .../id   => model.delete(id);
      *
-     * @param {Model} model Model to mount as CRUD resource
+     * @param {CrudAdapter} model a model to mount as CRUD resource
      */
-    public model(model: Model): HttpRoute {
+    public model<D>(model: CrudAdapter<D>): HttpRoute {
         // GET all
         this.get(async (req) => {
 
@@ -99,4 +98,12 @@ export class HttpRoute {
 
 export class ParamRoute extends HttpRoute {
 
+}
+
+export interface CrudAdapter<D> {
+    getAll(query: any): Promise<[D]>;
+    get(id: any): Promise<D>;
+    create(data: Partial<D>): Promise<D>;
+    update(id: any, data: Partial<D>): Promise<D>;
+    delete(id: any): Promise<D | void>;
 }

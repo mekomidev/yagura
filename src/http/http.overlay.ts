@@ -1,6 +1,5 @@
 import { YaguraEvent } from "../event";
 import { Overlay } from '../overlay';
-import { Model } from '../model';
 import { OverlayConfig } from "..";
 import { HttpStrategyConfig } from "./http.strategy";
 import { ApiError, ApiErrorType } from './apiError';
