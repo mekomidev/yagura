@@ -1,23 +1,28 @@
 import { Logger } from "./modules/logger.module";
-import * as express from 'express';
+import { Datastore } from "./datastore";
 
-export abstract class Model {
+export abstract class Model<DS extends Datastore<any>, I, D> {
+    public readonly name: string;
+    private readonly _ds: DS;
 
-    /** Returns JSON-formatted serialized instance of the model */
-    public abstract serialize(): any;
+    constructor(name: string, datastore: DS) {
+        this.name = name;
+        this._ds = datastore;
+    }
 
-    /** This is to be potentially called by a constructor/setter */
-    public abstract deserialize(json: any): void;
+    public abstract async query();
 
-    /**  */
-    public abstract sanitize(): this;
+    public abstract async create(data: any): Promise<ModelInstance<DS, I, D> & D>;
+    public abstract async save(instance: ModelInstance<DS, I, D> & D);
+    public abstract update(id: I, data: any): ModelInstance<DS,I,D> & D;
+    public abstract async delete(instance: ModelInstance<DS, I, D> & D);
 
     /*
      * Static per-model initializers
      */
-    private static readonly _actions: {[name: string]: typeof ModelAction} = {};
+    private readonly _actions: {[name: string]: ModelAction<DS>} = {};
 
-    public static setAction(name: string, action: typeof ModelAction): void {
+    public setAction(name: string, action: ModelAction<DS>): void {
         if (!!this._actions[name]) {
             throw new Error(`Action '${name}' `);
         } else {
@@ -26,10 +31,42 @@ export abstract class Model {
     }
 }
 
-export class ModelInstance {}
+export abstract class ModelInstance<DS extends Datastore<any>, I, D> {
+    public readonly id: I;
+    public readonly model: Model<DS, I, D>;
 
-export abstract class ModelAction<M extends Model> {
+    constructor(model: Model<DS, I, D>, id: I, data: D) {
+        this.model = model;
+        this.id = id;
+        Object.assign(this, data);
+    }
+
+    public abstract async save();
+    public abstract async delete();
+
+    public abstract serialize(): D;
 }
+
+export abstract class ModelAction<DS extends Datastore<any>> {
+
+    //public abstract async execute(): Promise<ModelInstance<DS, any, any> | [ModelInstance<DS>] | void>;
+}
+
+//  EXAMPLE of implementation
+//
+// class SqlDatastore extends Datastore {};
+// class SqlModel extends Model<SqlDatastore, number> {};
+
+// interface ExampleData {
+//     lol: string;
+// }
+
+// class SqlModelInstance extends ModelInstance<SqlDatastore, number, ExampleData> implements ExampleData {}
+
+// let exampleInstance: SqlModelInstance;
+// exampleInstance.lol;
+
+
 //     private readonly logger: Logger;
 
 //     constructor() {}
