@@ -53,7 +53,7 @@ export class Yagura {
     /*
      *  Modules subsystem
      */
-    private _modules: { [name: string]: ModuleHolder<any> } = {};
+    private static _modules: { [name: string]: ModuleHolder<any> } = {};
     // {
     //     "name": {
     //         active: Module,
@@ -64,7 +64,7 @@ export class Yagura {
     //     }
     // }
 
-    public getModule<M extends Module>(name: string, vendor?: string): M {
+    public static getModule<M extends Module>(name: string, vendor?: string): M {
         const m: ModuleHolder<M> = this._modules[name];
 
         if (!m) {
@@ -88,12 +88,12 @@ export class Yagura {
      * @param name name of the Module to be adapted
      * @returns {Module} a Module proxy for the requested Module
      */
-    public getModuleProxy<M extends Module>(name: string): M {
+    public static getModuleProxy<M extends Module>(name: string): M {
         throw new StubError();
         return null;
     }
 
-    public registerModule<M extends Module>(mod: M): void {
+    public static registerModule<M extends Module>(mod: M): M {
         let m: ModuleHolder<M> = this._modules[mod.name];
 
         if (!m) {
