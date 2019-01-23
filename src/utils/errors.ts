@@ -1,4 +1,13 @@
 import * as express from 'express';
+export class YaguraError extends Error {
+
+    constructor(err: Error | string) {
+        super(err instanceof Error ? err.message : err);
+
+        if (err instanceof Error) {
+            Object.assign(this, err);
+        }
+    }
 
 /** Error to be thrown when a method is not overriden properly (please don't use this) */
 export class StubError extends Error {
@@ -6,5 +15,3 @@ export class StubError extends Error {
         super('Stub call: this function has not been overriden properly\nAlso double error! You should use an abstract method instead of this, douchenozzle!');
     }
 }
-
-export class YaguraError extends Error {}
