@@ -29,7 +29,7 @@ export class Yagura {
         });
 
         // Initialize dependencies
-        Yagura.logger = new DefaultLogger();
+        Yagura.logger = Yagura.registerModule(new DefaultLogger());
 
         // Initialize Overlay
         Yagura._overlay = overlay;
@@ -115,6 +115,8 @@ export class Yagura {
                 m.vendors[mod.vendor] = mod;
             }
         }
+
+        return mod; // this.getModuleProxy(mod.name);
     }
 
     public static async handleError(err: Error) {
