@@ -5,6 +5,7 @@ import { Logger, DefaultLogger } from './modules/logger.module';
 
 import _colors = require('colors');
 import { YaguraEvent } from './event';
+import { HandleGuard } from './utils/handleGuard';
 
 export class Yagura {
     private static _overlay: Overlay;
@@ -44,9 +45,13 @@ export class Yagura {
      *  Event subsystem
      */
     public static handleEvent(event: YaguraEvent) {
-        // TODO: prevent events from being handled more than once
-        // TODO: add analytics
-        // TODO: apply filters
+        // Check if event was handled already
+        if (event.guard.wasHandled) {
+            this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop\n${event.toString()}`);
+        } else {
+            event.guard.flagHandled();
+        }
+
         this._overlay.handleEvent(event);
     }
 
@@ -119,9 +124,23 @@ export class Yagura {
         return mod; // this.getModuleProxy(mod.name);
     }
 
-    public static async handleError(err: Error) {
-        // TODO: prevent errors from being handled more than once
-        this.logger.error(err.toString());
+    public static async handleError(e: Error | YaguraError) {
+        // Wrap the error in YaguraError if it isn't already
+        let err: YaguraError;
+        if (e instanceof YaguraError) {
+            err = e;
+        } else {
+            e = new YaguraError(e);
+        }
+
+        // Check if event was handled already
+        if (err.guard.wasHandled) {
+            this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop\n${event.toString()}`);
+        } else {
+            err.guard.flagHandled();
+        }
+
+        this.logger.error(err);
 
         if (!!this._overlay) {
             await this._overlay.handleError(err);

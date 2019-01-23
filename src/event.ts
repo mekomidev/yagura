@@ -1,5 +1,6 @@
 import { Yagura } from "./yagura";
 import { deepFreeze } from "./utils/objectUtils";
+import { HandleGuard } from "./utils/handleGuard";
 
 export abstract class YaguraEvent {
     protected data: any;
@@ -7,6 +8,8 @@ export abstract class YaguraEvent {
     constructor(data: any) {
         this.data = data;
     }
+
+    public readonly guard: HandleGuard = new HandleGuard();
 }
 
 export interface EventHandler<E extends YaguraEvent> {
