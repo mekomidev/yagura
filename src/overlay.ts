@@ -25,8 +25,15 @@ export abstract class Overlay implements EventHandler {
         this.config = deepFreeze(JSON.parse(JSON.stringify(config)));
     }
 
-    /** Handles incoming events */
-    public abstract async handleEvent(e: YaguraEvent): Promise<void>;
+    /** Called when the app is being initialized */
+    public abstract async initialize(): Promise<void>;
+
+    /**
+     * Handles incoming events
+     * 
+     * @returns {YaguraEvent} event to be handled by the underlying layers; if null, the handling loop stops for that event
+     */
+    public abstract async handleEvent(e: YaguraEvent): Promise<YaguraEvent>;
 
     /**
      * Called whenever an unhandled error is thrown in the app.
@@ -37,5 +44,9 @@ export abstract class Overlay implements EventHandler {
     public async handleError(err: Error) {
         // overriding is optional
         Yagura.handleError(err);
+    }
+
+    public toString(): string {
+        return `${this.config.vendor}#${this.config.name} (${this.config.version})`;
     }
 }

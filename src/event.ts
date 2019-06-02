@@ -13,7 +13,7 @@ export abstract class YaguraEvent {
 }
 
 export interface EventHandler {
-    handleEvent(event: YaguraEvent): void | Promise<void>;
+    handleEvent(event: YaguraEvent): YaguraEvent | Promise<YaguraEvent>;
 }
 
 /** 

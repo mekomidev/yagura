@@ -8,11 +8,19 @@ import { YaguraEvent } from './event';
 import { HandleGuard } from './utils/handleGuard';
 
 export class Yagura {
-    private static _overlay: Overlay;
+    private static _overlays: Overlay[];
     protected static logger: Logger;
 
-    public static async start(overlay: Overlay) {
-        if (Yagura._overlay) {
+    public static async start(o: Overlay | Overlay[]) {
+        let overlays: Overlay[];
+
+        if(o instanceof Overlay) {
+            overlays = [o];
+        } else {
+            overlays = o;
+        }
+
+        if (Yagura._overlays) {
             throw new YaguraError(`Yagura has already been initialized, you cannot call start() more than once`);
         }
 
@@ -33,12 +41,16 @@ export class Yagura {
         Yagura.logger = Yagura.registerModule(new DefaultLogger());
 
         // Initialize Overlay
-        Yagura._overlay = overlay;
-
-        // Connect to DB ?
-        // await this._connectDatabase();
-
-        // Start overlay
+        this._overlays = overlays;
+        
+        for(let o of this._overlays.reverse()) {
+            try { await o.initialize(); }
+            catch(err) {
+                this.logger.error(`Failed to initialize overlay: ${o.toString()}`);
+                await this.handleError(err);
+                break;
+            }
+        }
     }
 
     /*
@@ -61,11 +73,15 @@ export class Yagura {
             event.guard.flagHandled();
         }
 
-        try {
-            await this._overlay.handleEvent(event);
-        } catch(e) {
-            try { await this._overlay.handleError(e); }
-            catch(e2) { await this.handleError(e2); }
+        for(let o of this._overlays) {
+            try {
+                event = await o.handleEvent(event);
+                if(!event) break;
+            } catch(e) {
+                try { await o.handleError(e); }
+                catch(e2) { await this.handleError(e2); }
+                break;
+            }
         }
     }
 
@@ -135,6 +151,7 @@ export class Yagura {
             }
         }
 
+        // TODO: evaluate whether the proxy should be returned
         return mod; // this.getModuleProxy(mod.name);
     }
 
