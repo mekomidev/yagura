@@ -17,16 +17,3 @@ export interface EventHandler {
 }
 
 export type EventFilter = (event: YaguraEvent) => boolean;
-
-export abstract class EventStrategy<E extends YaguraEvent> implements EventHandler<E> {
-    protected readonly _config: any;
-
-    public constructor(config: any) {
-        this._config = deepFreeze(config);
-    }
-
-    public abstract async start(): Promise<void>;
-    public handleEvent(event: E): void {
-        Yagura.handleEvent(event);
-    }
-}
