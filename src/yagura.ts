@@ -9,7 +9,7 @@ import { HandleGuard } from './utils/handleGuard';
 
 export class Yagura {
     private static _overlay: Overlay;
-    private static logger: Logger;
+    protected static logger: Logger;
 
     public static async start(overlay: Overlay) {
         if (Yagura._overlay) {
@@ -21,11 +21,11 @@ export class Yagura {
             await this._handleShutdown();
         });
 
-        process.on('unhandledRejection', async (err) => {
+        process.on('unhandledRejection', async (err: Error) => {
             await this.handleError(err);
         });
 
-        process.on('uncaughtException', async (err) => {
+        process.on('uncaughtException', async (err: Error) => {
             await this.handleError(err);
         });
 
@@ -44,15 +44,29 @@ export class Yagura {
     /*
      *  Event subsystem
      */
-    public static handleEvent(event: YaguraEvent) {
+    public static async handleEvent(event: YaguraEvent): Promise<void> {
         // Check if event was handled already
         if (event.guard.wasHandled) {
-            this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop\n${event.toString()}`);
+            this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
+            
+            if(process.env.NODE_ENV != 'production') {
+                // do nothing, let it loop
+                this.logger.warn(`Re-handled event:\n${event.toString()}`);
+            } else {
+                // drop the event
+                this.logger.warn('Dropping event');
+                return;
+            }
         } else {
             event.guard.flagHandled();
         }
 
-        this._overlay.handleEvent(event);
+        try {
+            await this._overlay.handleEvent(event);
+        } catch(e) {
+            try { await this._overlay.handleError(e); }
+            catch(e2) { await this.handleError(e2); }
+        }
     }
 
     /*
@@ -126,6 +140,7 @@ export class Yagura {
 
     public static async handleError(e: Error | YaguraError) {
         // Wrap the error in YaguraError if it isn't already
+        // TODO: consider whether this approach is appropriate
         let err: YaguraError;
         if (e instanceof YaguraError) {
             err = e;
@@ -141,10 +156,6 @@ export class Yagura {
         }
 
         this.logger.error(err);
-
-        if (!!this._overlay) {
-            await this._overlay.handleError(err);
-        }
     }
 
     private static async _handleShutdown() {
