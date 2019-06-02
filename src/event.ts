@@ -12,8 +12,8 @@ export abstract class YaguraEvent {
     public readonly guard: HandleGuard = new HandleGuard();
 }
 
-export interface EventHandler<E extends YaguraEvent> {
-    handleEvent(event: E): void | Promise<void>;
+export interface EventHandler {
+    handleEvent(event: YaguraEvent): void | Promise<void>;
 }
 
 export type EventFilter = (event: YaguraEvent) => boolean;

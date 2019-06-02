@@ -1,5 +1,5 @@
 import { deepFreeze } from './utils/objectUtils';
-import { YaguraEvent } from './event';
+import { YaguraEvent, EventHandler, EventFilter } from './event';
 
 export interface OverlayConfig {
     name: string;
@@ -11,7 +11,7 @@ export interface OverlayConfig {
     overlay: any;
 }
 
-export abstract class Overlay {
+export abstract class Overlay implements EventHandler {
     public readonly config: OverlayConfig;
 
     /**
