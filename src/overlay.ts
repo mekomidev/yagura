@@ -30,7 +30,7 @@ export abstract class Overlay implements EventHandler {
 
     /**
      * Handles incoming events
-     * 
+     *
      * @returns {YaguraEvent} event to be handled by the underlying layers; if null, the handling loop stops for that event
      */
     public abstract async handleEvent(e: YaguraEvent): Promise<YaguraEvent>;

@@ -11,13 +11,13 @@ export class Yagura {
     private static _overlays: Overlay[];
     protected static logger: Logger;
 
-    public static async start(o: Overlay | Overlay[]) {
+    public static async start(overlay: Overlay | Overlay[]) {
         let overlays: Overlay[];
 
-        if(o instanceof Overlay) {
-            overlays = [o];
+        if (overlay instanceof Overlay) {
+            overlays = [overlay];
         } else {
-            overlays = o;
+            overlays = overlay;
         }
 
         if (Yagura._overlays) {
@@ -42,10 +42,11 @@ export class Yagura {
 
         // Initialize Overlay
         this._overlays = overlays;
-        
-        for(let o of this._overlays.reverse()) {
-            try { await o.initialize(); }
-            catch(err) {
+
+        for (const o of this._overlays.reverse()) {
+            try {
+                await o.initialize();
+            } catch (err) {
                 this.logger.error(`Failed to initialize overlay: ${o.toString()}`);
                 await this.handleError(err);
                 break;
@@ -60,8 +61,8 @@ export class Yagura {
         // Check if event was handled already
         if (event.guard.wasHandled) {
             this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
-            
-            if(process.env.NODE_ENV != 'production') {
+
+            if (process.env.NODE_ENV !== 'production') {
                 // do nothing, let it loop
                 this.logger.warn(`Re-handled event:\n${event.toString()}`);
             } else {
@@ -73,13 +74,19 @@ export class Yagura {
             event.guard.flagHandled();
         }
 
-        for(let o of this._overlays) {
+        for (const o of this._overlays) {
             try {
                 event = await o.handleEvent(event);
-                if(!event) break;
-            } catch(e) {
-                try { await o.handleError(e); }
-                catch(e2) { await this.handleError(e2); }
+                if (!event) {
+                    break;
+                }
+            } catch (e) {
+                try {
+                    await o.handleError(e);
+                } catch (e2) {
+                    await this.handleError(e2);
+                }
+
                 break;
             }
         }
