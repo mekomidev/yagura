@@ -1,4 +1,4 @@
-import { HttpRequest } from './http.strategy';
+import { HttpRequest } from './httpServer.overlay';
 
 export type HttpRouteCallback = (event: HttpRequest) => Promise<void>;
 
