@@ -5,13 +5,22 @@ import { Logger, DefaultLogger } from './modules/logger.module';
 
 import _colors = require('colors');
 import { YaguraEvent } from './event';
+import { HandleGuard } from './utils/handleGuard';
 
 export class Yagura {
-    private static _overlay: Overlay;
-    private static logger: Logger;
+    private static _overlays: Overlay[];
+    protected static logger: Logger;
 
-    public static async start(overlay: Overlay) {
-        if (Yagura._overlay) {
+    public static async start(overlay: Overlay | Overlay[]) {
+        let overlays: Overlay[];
+
+        if (overlay instanceof Overlay) {
+            overlays = [overlay];
+        } else {
+            overlays = overlay;
+        }
+
+        if (Yagura._overlays) {
             throw new YaguraError(`Yagura has already been initialized, you cannot call start() more than once`);
         }
 
@@ -20,40 +29,73 @@ export class Yagura {
             await this._handleShutdown();
         });
 
-        process.on('unhandledRejection', async (err) => {
+        process.on('unhandledRejection', async (err: Error) => {
             await this.handleError(err);
         });
 
-        process.on('uncaughtException', async (err) => {
+        process.on('uncaughtException', async (err: Error) => {
             await this.handleError(err);
         });
 
         // Initialize dependencies
-        Yagura.logger = new DefaultLogger();
+        Yagura.logger = Yagura.registerModule(new DefaultLogger());
 
         // Initialize Overlay
-        Yagura._overlay = overlay;
+        this._overlays = overlays;
 
-        // Connect to DB ?
-        // await this._connectDatabase();
-
-        // Start overlay
+        for (const o of this._overlays.reverse()) {
+            try {
+                await o.initialize();
+            } catch (err) {
+                this.logger.error(`Failed to initialize overlay: ${o.toString()}`);
+                await this.handleError(err);
+                break;
+            }
+        }
     }
 
     /*
      *  Event subsystem
      */
-    public static handleEvent(event: YaguraEvent) {
-        // TODO: prevent events from being handled more than once
-        // TODO: add analytics
-        // TODO: apply filters
-        this._overlay.handleEvent(event);
+    public static async handleEvent(event: YaguraEvent): Promise<void> {
+        // Check if event was handled already
+        if (event.guard.wasHandled) {
+            this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
+
+            if (process.env.NODE_ENV !== 'production') {
+                // do nothing, let it loop
+                this.logger.warn(`Re-handled event:\n${event.toString()}`);
+            } else {
+                // drop the event
+                this.logger.warn('Dropping event');
+                return;
+            }
+        } else {
+            event.guard.flagHandled();
+        }
+
+        for (const o of this._overlays) {
+            try {
+                event = await o.handleEvent(event);
+                if (!event) {
+                    break;
+                }
+            } catch (e) {
+                try {
+                    await o.handleError(e);
+                } catch (e2) {
+                    await this.handleError(e2);
+                }
+
+                break;
+            }
+        }
     }
 
     /*
      *  Modules subsystem
      */
-    private _modules: { [name: string]: ModuleHolder<any> } = {};
+    private static _modules: { [name: string]: ModuleHolder<any> } = {};
     // {
     //     "name": {
     //         active: Module,
@@ -64,7 +106,7 @@ export class Yagura {
     //     }
     // }
 
-    public getModule<M extends Module>(name: string, vendor?: string): M {
+    public static getModule<M extends Module>(name: string, vendor?: string): M {
         const m: ModuleHolder<M> = this._modules[name];
 
         if (!m) {
@@ -88,12 +130,12 @@ export class Yagura {
      * @param name name of the Module to be adapted
      * @returns {Module} a Module proxy for the requested Module
      */
-    public getModuleProxy<M extends Module>(name: string): M {
+    public static getModuleProxy<M extends Module>(name: string): M {
         throw new StubError();
         return null;
     }
 
-    public registerModule<M extends Module>(mod: M): void {
+    public static registerModule<M extends Module>(mod: M): M {
         let m: ModuleHolder<M> = this._modules[mod.name];
 
         if (!m) {
@@ -115,15 +157,29 @@ export class Yagura {
                 m.vendors[mod.vendor] = mod;
             }
         }
+
+        // TODO: evaluate whether the proxy should be returned
+        return mod; // this.getModuleProxy(mod.name);
     }
 
-    public static async handleError(err: Error) {
-        // TODO: prevent errors from being handled more than once
-        this.logger.error(err.toString());
-
-        if (!!this._overlay) {
-            await this._overlay.handleError(err);
+    public static async handleError(e: Error | YaguraError) {
+        // Wrap the error in YaguraError if it isn't already
+        // TODO: consider whether this approach is appropriate
+        let err: YaguraError;
+        if (e instanceof YaguraError) {
+            err = e;
+        } else {
+            e = new YaguraError(e);
         }
+
+        // Check if event was handled already
+        if (err.guard.wasHandled) {
+            this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop\n${event.toString()}`);
+        } else {
+            err.guard.flagHandled();
+        }
+
+        this.logger.error(err);
     }
 
     private static async _handleShutdown() {

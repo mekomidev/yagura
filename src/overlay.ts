@@ -1,5 +1,6 @@
 import { deepFreeze } from './utils/objectUtils';
-import { YaguraEvent } from './event';
+import { YaguraEvent, EventHandler, EventFilter } from './event';
+import { Yagura } from './yagura';
 
 export interface OverlayConfig {
     name: string;
@@ -11,7 +12,7 @@ export interface OverlayConfig {
     overlay: any;
 }
 
-export abstract class Overlay {
+export abstract class Overlay implements EventHandler {
     public readonly config: OverlayConfig;
 
     /**
@@ -24,15 +25,28 @@ export abstract class Overlay {
         this.config = deepFreeze(JSON.parse(JSON.stringify(config)));
     }
 
-    /** Handles incoming events */
-    public abstract async handleEvent(e: YaguraEvent): Promise<void>;
+    /** Called when the app is being initialized */
+    public abstract async initialize(): Promise<void>;
 
     /**
-     * Called whenever an unhandled error is thrown in the app
+     * Handles incoming events
+     *
+     * @returns {YaguraEvent} event to be handled by the underlying layers; if null, the handling loop stops for that event
+     */
+    public abstract async handleEvent(e: YaguraEvent): Promise<YaguraEvent>;
+
+    /**
+     * Called whenever an unhandled error is thrown in the app.
+     * By default lets Yagura handle the error, so overriding this is recommended
      *
      * @param err
      */
     public async handleError(err: Error) {
         // overriding is optional
+        Yagura.handleError(err);
+    }
+
+    public toString(): string {
+        return `${this.config.vendor}#${this.config.name} (${this.config.version})`;
     }
 }
