@@ -1,3 +1,5 @@
+import { Response } from 'express';
+
 export interface ApiErrorType {
     code?: number;
     type: string;
@@ -117,7 +119,7 @@ export class ApiError extends Error {
         this._errorType = error;
     }
 
-    // public sendResponse(res: express.Response) {
-    //     res.status(this._errorType.code || 500).send({ error: this._errorType.type });
-    // }
+    public sendResponse(res: Response) {
+        res.status(this._errorType.code || 500).send({ error: this._errorType.type });
+    }
 }
