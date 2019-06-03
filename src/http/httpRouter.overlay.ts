@@ -40,6 +40,11 @@ export abstract class HttpRouterOverlay extends Overlay {
         }
     }
 
+    /**
+     * Override this in order to declare the desired HTTP routes
+     *
+     * @param {HttpRoute} router base router to attach the routes and method callbacks to
+     */
     public abstract declareRoutes(router: HttpRoute): void;
 
     @eventFilter([HttpRequest])
