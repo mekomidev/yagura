@@ -8,7 +8,7 @@ import { YaguraEvent } from './event';
 import { HandleGuard } from './utils/handleGuard';
 
 export class Yagura {
-    private static _overlays: Overlay[];
+    private static _overlays: Array<Overlay>
     protected static logger: Logger;
 
     public static async start(overlay: Overlay | Overlay[]) {
@@ -37,7 +37,7 @@ export class Yagura {
             await this.handleError(err);
         });
 
-        // Initialize dependencies
+        // Initialize base modules
         Yagura.logger = Yagura.registerModule(new DefaultLogger());
 
         // Initialize Overlay
