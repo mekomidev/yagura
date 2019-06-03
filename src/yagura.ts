@@ -37,7 +37,7 @@ export class Yagura {
             await this.handleError(err);
         });
 
-        // Initialize dependencies
+        // Initialize base modules
         Yagura.logger = Yagura.registerModule(new DefaultLogger());
 
         // Initialize Overlay
