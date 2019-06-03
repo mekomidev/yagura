@@ -1,6 +1,10 @@
 import { HttpRequest } from './httpServer.overlay';
 
+export class HttpRouteFormattingError extends Error {}
+
 export type HttpRouteCallback = (event: HttpRequest) => Promise<void>;
+
+export type HttpMethod = 'all' | 'head' | 'get' | 'post' | 'put' | 'delete';
 
 export class HttpRouter {
 
@@ -8,44 +12,91 @@ export class HttpRouter {
 
 export class HttpRoute {
     public readonly name: string;
+    public readonly subroutes: Array<HttpRoute> = new Array<HttpRoute>();
 
-    constructor(name: string) {
+    constructor(name) {
         this.name = name;
     }
 
-    public route(route: string): HttpRoute {
-        let newRoute: HttpRoute;
-
-        if (route.indexOf('/') >= 0) {
-            newRoute = this._buildRoute(route);
-        } else {
-            newRoute = new HttpRoute(route);
+    public route(path: string): HttpRoute {
+        // Simplest path
+        if (path === '/') {
+            return this;
         }
 
-        return newRoute;
+        // Check if starts with /
+        if (!path.startsWith('/')) {
+            throw new HttpRouteFormattingError();
+        }
+
+        // Get the next subroute
+        const subpaths = path.split('/');
+        const nextName = subpaths[1];
+        const nextPath = subpaths.splice(1, 1).join('/');
+
+        let newRoute;
+        // TODO: handle wildcards and param routes
+        if (!!this.subroutes[nextName]) {
+            newRoute = this.subroutes[nextName];
+        } else {
+            newRoute = new HttpRoute(nextName);
+            this.subroutes.push(newRoute);
+        }
+
+        return newRoute.route(nextPath);
     }
 
-    public param(param: string, validator?: (value: any) => boolean | Error): HttpRoute {
-        return null;
+    public async handle(event: HttpRequest, path?: string): Promise<boolean> {
+        path = path ? path : event.req.path;
+
+        if (path === '/' || path === '') {
+            // Method name
+            // NOTE: Express does this, figure out why and if it is okay
+            let methodName: HttpMethod = event.req.method.toLowerCase() as HttpMethod;
+            if (methodName === 'head' && !this._methods.head) {
+                methodName = 'get';
+            }
+
+            // Method handler
+            let methodCallback: HttpRouteCallback;
+            if (!!this._methods.all) {
+                methodCallback = this._methods.all;
+            } else {
+                methodCallback = this._methods[methodName];
+            }
+
+            if (!!methodCallback) {
+                await methodCallback(event);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            // Get the next subroute
+            const subpaths = path.split('/');
+            const nextName = subpaths[1];
+            const nextPath = subpaths.splice(1, 1).join('/');
+
+            let newRoute;
+            // TODO: handle wildcards and param routes
+            if (!!this.subroutes[nextName]) {
+                newRoute = this.subroutes[nextName];
+            } else {
+                return false;
+            }
+
+            return newRoute.handle(event, nextPath);
+        }
     }
 
-    private _buildRoute(path: string): HttpRoute {
-        // if (path.indexOf('/') === 0) {
-        //     path = path.substring(1);
-        // }
-
-        // if (path.indexOf(':') === 0) {
-        //     // 
-        // } else {
-            
-        // }
-
-        return null;
-    }
+    // public param(param: string, validator?: (value: any) => boolean | Error): HttpRoute {
+    //     return null;
+    // }
 
     /*
      *  REST/CRUD request handlers
      */
+    private _methods: {[key: string]: HttpRouteCallback};
 
     public all(cb: HttpRouteCallback) {}
     public get(cb: HttpRouteCallback) {}
@@ -69,7 +120,7 @@ export class HttpRoute {
     public model<D>(model: CrudAdapter<D>): HttpRoute {
         // GET all
         this.get(async (req) => {
-
+            
         });
 
         // GET one
@@ -96,9 +147,9 @@ export class HttpRoute {
     }
 }
 
-export class ParamRoute extends HttpRoute {
+// export class ParamRoute extends HttpRoute {
 
-}
+// }
 
 export interface CrudAdapter<D> {
     getAll(query: any): Promise<[D]>;
