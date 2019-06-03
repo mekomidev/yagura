@@ -8,7 +8,6 @@ export interface OverlayConfig {
     vendor: string;
     yaguraVersion?: string;
 
-    strategy: any;
     overlay: any;
 }
 
