@@ -12,9 +12,9 @@ export class HttpRouter {
 
 export class HttpRoute {
     public readonly name: string;
-    public readonly subroutes: Array<HttpRoute> = new Array<HttpRoute>();
+    public readonly subroutes: HttpRoute[] = new Array<HttpRoute>();
 
-    constructor(name) {
+    constructor(name: string) {
         this.name = name;
     }
 
