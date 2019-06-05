@@ -114,11 +114,15 @@ export class HttpServerOverlay extends Overlay {
     }
 
     @eventFilter([HttpRequest])
+    /**
+     * Handles [HttpRequest] instances that were not able to be routed
+     * by responding with a configured [ApiError] code (defaults to [404]).
+     */
     public async handleEvent(event: HttpRequest): Promise<YaguraEvent> {
-        // Default response
-        (new ApiError(this.config.overlay.defaultError)).sendResponse(event.res);
+        // Send the default error response
+        (new ApiError(this.config.overlay.defaultError || 404)).sendResponse(event.res);
 
-        // Always return null
+        // The HttpRequest will always be ansered to here and never forwarded further
         return null;
     }
 }
