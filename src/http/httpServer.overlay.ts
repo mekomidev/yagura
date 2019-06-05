@@ -17,6 +17,7 @@ export interface HttpServerConfig {
     port: number;
     errorCodes?: [ApiErrorType];
     defaultError: string | number;
+    expressSettings: {[key: string]: any};
 }
 
 /**
@@ -62,6 +63,12 @@ export class HttpServerOverlay extends Overlay {
         require('express-async-errors');
         for (const m of this._expressMiddleware) {
             app.use(m());
+        }
+        // Apply settings
+        for (const key in this.config.overlay.expressSettings) {
+            if (this.config.overlay.expressSettings.hasProperty(key)) {
+                app.set(key, this.config.overlay.expressSettings[key]);
+            }
         }
 
         // Pass events to Yagura
