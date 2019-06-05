@@ -55,7 +55,7 @@ export class HttpServerOverlay extends Overlay {
 
         // Pass events to Yagura
         app.use((req, res) => {
-            Yagura.handleEvent(new HttpRequest({ req, res }));
+            Yagura.dispatch(new HttpRequest({ req, res }));
         });
 
         // Set up error handling
