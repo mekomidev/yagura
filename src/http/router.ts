@@ -94,11 +94,22 @@ export class HttpRoute {
      */
     private _methods: {[key: string]: HttpRouteCallback};
 
-    public all(cb: HttpRouteCallback) {}
-    public get(cb: HttpRouteCallback) {}
-    public put(cb: HttpRouteCallback) {}
-    public post(cb: HttpRouteCallback) {}
-    public delete(cb: HttpRouteCallback) {}
+    /** Assigns a callback to a specified HTTP method on this route */
+    public method(name: HttpMethod, cb: HttpRouteCallback) {
+        name = name.toLowerCase() as HttpMethod;
+
+        if (!!this._methods[name]) {
+            (Yagura.getModule('Logger') as Logger).debug("[HTTP]".green.bold + " method " + name.bold + " is being overridden in HttpRouterOverlay");
+        }
+
+        this._methods[name] = cb;
+    }
+
+    public all(cb: HttpRouteCallback) { this.method('all', cb); }
+    public get(cb: HttpRouteCallback) { this.method('get', cb); }
+    public put(cb: HttpRouteCallback) { this.method('put', cb); }
+    public post(cb: HttpRouteCallback) { this.method('post', cb); }
+    public delete(cb: HttpRouteCallback) { this.method('delete', cb); }
 
     /**
      * Mount a model with CrudAdapter on current route and attach CRUD handlers/subroutes
@@ -115,28 +126,33 @@ export class HttpRoute {
      */
     public model<D>(model: CrudAdapter<D>): HttpRoute {
         // GET all
-        this.get(async (req) => {
-            
+        this.get(async (event) => {
+            const res = await model.getAll(event.req.query);
+            event.res.status(res.code).send(res.data);
         });
 
         // GET one
-        this.route(':id').get(async (req) => {
-
+        this.route('/:id').get(async (event) => {
+            const res = await model.get(event.req.params.id);
+            event.res.status(res.code).send(res.data);
         });
 
         // POST (create)
-        this.post(async (req) => {
-
+        this.post(async (event) => {
+            const res = await model.create(event.req.body);
+            event.res.status(res.code).send(res.data);
         });
 
         // PUT (update)
-        this.put(async (req) => {
-
+        this.route('/:id').put(async (event) => {
+            const res = await model.update(event.req.params.id, event.req.query);
+            event.res.status(res.code).send(res.data);
         });
 
         // DELETE one
-        this.delete(async (req) => {
-            
+        this.route('/:id').delete(async (event) => {
+            const res = await model.delete(event.req.params.id);
+            event.res.status(res.code).send(res.data);
         });
 
         return this;
@@ -148,9 +164,15 @@ export class HttpRoute {
 // }
 
 export interface CrudAdapter<D> {
-    getAll(query: any): Promise<[D]>;
-    get(id: any): Promise<D>;
-    create(data: Partial<D>): Promise<D>;
-    update(id: any, data: Partial<D>): Promise<D>;
-    delete(id: any): Promise<D | void>;
+    getAll(query: any): Promise<CrudResponse<[D]>>;
+    get(id: any): Promise<CrudResponse<D>>;
+    create(data: Partial<D>): Promise<CrudResponse<D>>;
+    update(id: any, data: Partial<D>): Promise<CrudResponse<D>>;
+    delete(id: any): Promise<CrudResponse<D | void>>;
+}
+
+/** Response interface to be used with CrudAdapter callbacks */
+export interface CrudResponse<D> {
+    code: number;
+    data: D;
 }
