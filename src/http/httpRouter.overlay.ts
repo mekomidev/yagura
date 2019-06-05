@@ -7,7 +7,7 @@ import { Logger } from '../modules/logger.module';
 
 import { ApiError, ApiErrorType } from './apiError';
 import { HttpServerOverlay, HttpRequest } from './httpServer.overlay';
-import { HttpRoute, CrudAdapter, HttpRouter } from './router';
+import { HttpRoute, CrudAdapter } from './router';
 
 export interface HttpRouterOverlayConfig extends OverlayConfig {
     overlay: HttpRouterConfig;

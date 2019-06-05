@@ -6,10 +6,6 @@ export type HttpRouteCallback = (event: HttpRequest) => Promise<void>;
 
 export type HttpMethod = 'all' | 'head' | 'get' | 'post' | 'put' | 'delete';
 
-export class HttpRouter {
-
-}
-
 export class HttpRoute {
     public readonly name: string;
     public readonly subroutes: HttpRoute[] = new Array<HttpRoute>();
@@ -34,7 +30,7 @@ export class HttpRoute {
         const nextName = subpaths[1];
         const nextPath = subpaths.splice(1, 1).join('/');
 
-        let newRoute;
+        let newRoute: HttpRoute;
         // TODO: handle wildcards and param routes
         if (!!this.subroutes[nextName]) {
             newRoute = this.subroutes[nextName];
@@ -77,7 +73,7 @@ export class HttpRoute {
             const nextName = subpaths[1];
             const nextPath = subpaths.splice(1, 1).join('/');
 
-            let newRoute;
+            let newRoute: HttpRoute;
             // TODO: handle wildcards and param routes
             if (!!this.subroutes[nextName]) {
                 newRoute = this.subroutes[nextName];
