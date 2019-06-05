@@ -1,4 +1,4 @@
-import { Overlay, OverlayConfig } from './overlay';
+import { Overlay } from './overlay';
 import { Module } from './module';
 import { YaguraError, StubError } from './utils/errors';
 import { Logger, DefaultLogger } from './modules/logger.module';
@@ -8,19 +8,11 @@ import { YaguraEvent } from './event';
 import { HandleGuard } from './utils/handleGuard';
 
 export class Yagura {
-    private static _overlays: Overlay[];
+    private static _stack: Overlay[];
     protected static logger: Logger;
 
-    public static async start(overlay: Overlay | Overlay[]) {
-        let overlays: Overlay[];
-
-        if (overlay instanceof Overlay) {
-            overlays = [overlay];
-        } else {
-            overlays = overlay;
-        }
-
-        if (Yagura._overlays) {
+    public static async start(overlays: Overlay[]) {
+        if (Yagura._stack) {
             throw new YaguraError(`Yagura has already been initialized, you cannot call start() more than once`);
         }
 
@@ -41,9 +33,9 @@ export class Yagura {
         Yagura.logger = Yagura.registerModule(new DefaultLogger());
 
         // Initialize Overlay
-        this._overlays = overlays;
+        this._stack = overlays;
 
-        for (const o of this._overlays.reverse()) {
+        for (const o of this._stack.reverse()) {
             try {
                 await o.initialize();
             } catch (err) {
@@ -57,7 +49,7 @@ export class Yagura {
     /*
      *  Event subsystem
      */
-    public static async handleEvent(event: YaguraEvent): Promise<void> {
+    public static async dispatch(event: YaguraEvent): Promise<void> {
         // Check if event was handled already
         if (event.guard.wasHandled) {
             this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
@@ -74,7 +66,7 @@ export class Yagura {
             event.guard.flagHandled();
         }
 
-        for (const o of this._overlays) {
+        for (const o of this._stack) {
             try {
                 event = await o.handleEvent(event);
                 if (!event) {
