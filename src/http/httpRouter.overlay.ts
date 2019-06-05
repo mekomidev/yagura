@@ -22,8 +22,8 @@ export interface HttpRouterConfig {
 /**
  * Abstract HTTP router definition.
  *
- * In a Yagura application with a HttpServerOverlay mounted low,
- * the HttpRouterOverlay (mounted above it) receives the HTTP requests
+ * In a Yagura application with a HttpServerOverlay mounted,
+ * the HttpRouterOverlay (mounted afterwards) receives the HTTP requests
  * and routes them per user's definition.
  */
 export abstract class HttpRouterOverlay extends Overlay {

@@ -19,6 +19,11 @@ export interface HttpServerConfig {
     defaultError: string | number;
 }
 
+/**
+ * Express.js-based HTTP server overlay.
+ * Starts a HTTP server on the given port with the given configuration and middleware,
+ * and dispatches [HttpRequest] events through Yagura, to be handled by [HttpRouterOverlay] instances.
+ */
 export class HttpServerOverlay extends Overlay {
     public readonly config: HttpOverlayConfig;
 
@@ -26,6 +31,11 @@ export class HttpServerOverlay extends Overlay {
     private _express: ExpressApp;
     private _expressMiddleware: [() => RequestHandler];
 
+    /** Initializes the overlay
+     * 
+     * @param {HttpOverlayConfig} config
+     * @param {[() => RequestHandler]} middleware Ordered array of Express.js middleware factory functions to be mounted
+     */
     constructor(config: HttpOverlayConfig, middleware: [() => RequestHandler]) {
         super(config);
         this._expressMiddleware = middleware;
@@ -38,6 +48,7 @@ export class HttpServerOverlay extends Overlay {
         }
     }
 
+    /** Creates an Express app instance and starts a HTTP server */
     public async initialize() {
         if (this._express) {
             throw new Error('This strategy has already been started');
@@ -110,6 +121,10 @@ export interface HttpEventData {
     res: Response;
 }
 
+/**
+ * A [YaguraEvent] subclass representing a HTTP request.
+ * Incapsules [req] and [res] objects in order to pass them through the overlay stack.
+ */
 export class HttpRequest extends YaguraEvent implements HttpEventData {
     protected readonly data: HttpEventData;
 
