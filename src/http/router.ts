@@ -1,3 +1,5 @@
+import { Yagura } from '../yagura';
+import { Logger } from '../modules/logger.module';
 import { HttpRequest } from './httpServer.overlay';
 
 export class HttpRouteFormattingError extends Error {}
@@ -14,15 +16,22 @@ export class HttpRoute {
         this.name = name;
     }
 
+    /**
+     * Creates a subroute according to the provided path, and returns its last node
+     *
+     * @param {string} path subroute path
+     *
+     * @returns {HttpRoute} last node of the created subroute, corresponding to the given path
+     */
     public route(path: string): HttpRoute {
         // Simplest path
         if (path === '/') {
             return this;
         }
 
-        // Check if starts with /
+        // Check formatting
         if (!path.startsWith('/')) {
-            throw new HttpRouteFormattingError();
+            throw new HttpRouteFormattingError("The route path must start with a slash /");
         }
 
         // Get the next subroute
@@ -42,6 +51,15 @@ export class HttpRoute {
         return newRoute.route(nextPath);
     }
 
+    /**
+     * Given a HTTP request, it calls the relevant callbacks.
+     * If a following path is also provided, the handling is forwarded to the appropriate node.
+     *
+     * @param {HttpRequest} event HTTP request to handle
+     * @param {string} path Following route, relative to itself
+     *
+     * @returns {boolean} whether an appropriate route was found in the tree
+     */
     public async handle(event: HttpRequest, path?: string): Promise<boolean> {
         path = path ? path : event.req.path;
 
@@ -92,6 +110,8 @@ export class HttpRoute {
     /*
      *  REST/CRUD request handlers
      */
+
+    /** Map of HTTP methods and their respective callbacks */
     private _methods: {[key: string]: HttpRouteCallback};
 
     /** Assigns a callback to a specified HTTP method on this route */
@@ -99,21 +119,26 @@ export class HttpRoute {
         name = name.toLowerCase() as HttpMethod;
 
         if (!!this._methods[name]) {
-            (Yagura.getModule('Logger') as Logger).debug("[HTTP]".green.bold + " method " + name.bold + " is being overridden in HttpRouterOverlay");
+            (Yagura.getModule('Logger') as Logger).warn("[HTTP]".green.bold + " method " + name.bold + " is being overridden in HttpRouterOverlay");
         }
 
         this._methods[name] = cb;
     }
 
+    /** Attaches a callback to all HTTP methods on this route */
     public all(cb: HttpRouteCallback) { this.method('all', cb); }
+    /** Attaches a callback to the HTTP GET method on this route */
     public get(cb: HttpRouteCallback) { this.method('get', cb); }
+    /** Attaches a callback to the HTTP PUT method on this route */
     public put(cb: HttpRouteCallback) { this.method('put', cb); }
+    /** Attaches a callback to the HTTP POST method on this route */
     public post(cb: HttpRouteCallback) { this.method('post', cb); }
+    /** Attaches a callback to the HTTP DELETE method on this route */
     public delete(cb: HttpRouteCallback) { this.method('delete', cb); }
 
     /**
-     * Mount a model with CrudAdapter on current route and attach CRUD handlers/subroutes
-     * All error handling is taken care of according to HTTP REST API standards
+     * Mounts a model with CrudAdapter on current route and attaches CRUD handlers to HTTP methods and relevant subroutes.
+     * All error handling should be taken care of according to HTTP REST API standards.
      *
      * Example:
      *  GET .../        => model.getAll(query);
@@ -122,7 +147,9 @@ export class HttpRoute {
      *  PUT .../id      => model.update(id, data);
      *  DELETE .../id   => model.delete(id);
      *
-     * @param {CrudAdapter} model a model to mount as CRUD resource
+     * @param {CrudAdapter} model a CRUD model adapter to mount as a resource
+     *
+     * @returns itself, for chaining
      */
     public model<D>(model: CrudAdapter<D>): HttpRoute {
         // GET all
@@ -163,6 +190,7 @@ export class HttpRoute {
 
 // }
 
+/** Boilerplate interface for writing CRUD-structured resource request callbacks */
 export interface CrudAdapter<D> {
     getAll(query: any): Promise<CrudResponse<[D]>>;
     get(id: any): Promise<CrudResponse<D>>;

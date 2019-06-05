@@ -41,7 +41,7 @@ export abstract class HttpRouterOverlay extends Overlay {
     }
 
     /**
-     * Override this in order to declare the desired HTTP routes
+     * Given a base router, declare all routes and their respective method handlers
      *
      * @param {HttpRoute} router base router to attach the routes and method callbacks to
      */
@@ -55,7 +55,7 @@ export abstract class HttpRouterOverlay extends Overlay {
 
         if (this.config.overlay.options.debugTime) {
             const time = endTime - startTime;
-            (Yagura.getModule('Logger') as Logger).verbose(`${event.req.method.toUpperCase().bold} ${event.req.path}` + `[${time}ms]`.dim);
+            (Yagura.getModule('Logger') as Logger).verbose("[HTTP]".green.bold + ` ${event.req.method.toUpperCase().bold} ${event.req.path} ` + `[${time}ms]`.dim);
         }
 
         // Pass HTTP event further down if not handled
