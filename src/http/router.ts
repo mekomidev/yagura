@@ -80,7 +80,13 @@ export class HttpRoute {
             }
 
             if (!!methodCallback) {
-                await methodCallback(event);
+                try {
+                    await methodCallback(event);
+                } catch (err) {
+                    // TODO: consider logging here?
+                    await event.sendError(err);
+                }
+
                 return true;
             } else {
                 return false;

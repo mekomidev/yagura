@@ -150,4 +150,19 @@ export class HttpRequest extends YaguraEvent implements HttpEventData {
     }
 
     // Response methods
+    public async send(status: number, data?: any): Promise<Response> {
+        this.res.status(status).send(data).end();
+        return this.res;
+    }
+
+    public async sendError(err: Error): Promise<Response> {
+        if (err instanceof HttpError) {
+            this.res.status(err.type.code).send(err.type.type).end();
+        } else {
+            // TODO: consider not sending the stack when in productioj
+            this.res.status(500).send(err.stack).end();
+        }
+
+        return this.res;
+    }
 }
