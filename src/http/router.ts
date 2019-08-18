@@ -158,15 +158,15 @@ export class HttpRoute {
      * @returns itself, for chaining
      */
     public model<D>(model: CrudAdapter<D>): HttpRoute {
-        // GET all
+        // GET many
         this.get(async (event) => {
-            const res = await model.getAll(event.req.query);
+            const res = await model.getMany(event.req.query);
             event.res.status(res.code).send(res.data);
         });
 
         // GET one
         this.route('/:id').get(async (event) => {
-            const res = await model.get(event.req.params.id);
+            const res = await model.getOne(event.req.params.id);
             event.res.status(res.code).send(res.data);
         });
 
@@ -198,15 +198,16 @@ export class HttpRoute {
 
 /** Boilerplate interface for writing CRUD-structured resource request callbacks */
 export interface CrudAdapter<D> {
-    getAll(query: any): Promise<CrudResponse<[D]>>;
-    get(id: any): Promise<CrudResponse<D>>;
+    getMany(query: any): Promise<CrudResponse<[D]>>;
+    getOne(id: any): Promise<CrudResponse<D>>;
     create(data: Partial<D>): Promise<CrudResponse<D>>;
     update(id: any, data: Partial<D>): Promise<CrudResponse<D>>;
     delete(id: any): Promise<CrudResponse<D | void>>;
 }
 
 /** Response interface to be used with CrudAdapter callbacks */
+// TODO: consider eliminating this
 export interface CrudResponse<D> {
-    code: number;
+    code?: number;
     data: D;
 }
