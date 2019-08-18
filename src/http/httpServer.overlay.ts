@@ -2,7 +2,7 @@ import { YaguraEvent, eventFilter } from "../event";
 import { Yagura } from "../yagura";
 import { Overlay, OverlayConfig } from "../overlay";
 import { Logger } from "../modules/logger.module";
-import { ApiError, ApiErrorType } from './apiError';
+import { HttpError, HttpErrorType } from './errors/http.error';
 
 import * as http from 'http';
 import { Express as ExpressApp, Response, Request } from 'express';
@@ -15,7 +15,7 @@ export interface HttpOverlayConfig extends OverlayConfig {
 
 export interface HttpServerConfig {
     port: number;
-    errorCodes?: [ApiErrorType];
+    errorCodes?: [HttpErrorType];
     defaultError: string | number;
     expressSettings: {[key: string]: any};
 }
@@ -44,7 +44,7 @@ export class HttpServerOverlay extends Overlay {
         // Initialize all defined error types
         if (this.config.overlay.errorCodes && this.config.overlay.errorCodes.length > 0) {
             this.config.overlay.errorCodes.forEach((errorCode) => {
-                ApiError.addType(errorCode);
+                HttpError.addType(errorCode);
             });
         }
     }
@@ -82,8 +82,8 @@ export class HttpServerOverlay extends Overlay {
             this.logger.error(err);
 
             if (!res.headersSent) {
-                if (err instanceof ApiError) {
-                    const apiError: ApiError = err as ApiError;
+                if (err instanceof HttpError) {
+                    const apiError: HttpError = err as HttpError;
                     // apiError.sendResponse(res);
                 } else {
                     res.sendStatus(500);
@@ -116,11 +116,11 @@ export class HttpServerOverlay extends Overlay {
     @eventFilter([HttpRequest])
     /**
      * Handles [HttpRequest] instances that were not able to be routed
-     * by responding with a configured [ApiError] code (defaults to [404]).
+     * by responding with a configured [HttpError] code (defaults to [404]).
      */
     public async handleEvent(event: HttpRequest): Promise<YaguraEvent> {
         // Send the default error response
-        (new ApiError(this.config.overlay.defaultError || 404)).sendResponse(event.res);
+        (new HttpError(this.config.overlay.defaultError || 404)).sendResponse(event.res);
 
         // The HttpRequest will always be ansered to here and never forwarded further
         return null;

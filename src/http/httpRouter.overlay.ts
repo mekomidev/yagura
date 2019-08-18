@@ -5,7 +5,7 @@ import { YaguraError } from '../utils/errors';
 
 import { Logger } from '../modules/logger.module';
 
-import { ApiError, ApiErrorType } from './apiError';
+import { HttpError, HttpErrorType } from './errors/http.error';
 import { HttpServerOverlay, HttpRequest } from './httpServer.overlay';
 import { HttpRoute, CrudAdapter } from './router';
 

@@ -1,37 +1,37 @@
 import { Response } from 'express';
 
-export interface ApiErrorType {
-    code?: number;
+export interface HttpErrorType {
+    code: number;
     type: string;
     message?: string;
 }
 
 /** Error to be thrown for HTTP API responses */
-export class ApiError extends Error {
+export class HttpError extends Error {
     /*
      *  Static members
      */
 
-    public static addType(errorType: ApiErrorType) {
-        // if (errorType instanceof ApiErrorType) {
-        //     if (!errorType.code || typeof errorType.code !== 'number') throw new Error('An instance of ApiErrorType needs a \'code\' number parameter');
-        //     if (!errorType.type || typeof errorType.type !== 'string') throw new Error('An instance of ApiErrorType needs a \'type\' string parameter');
-        //     if (typeof errorType.message !== 'string') throw new Error('An instance of ApiErrorType needs a \'message\' string parameter');
+    public static addType(errorType: HttpErrorType) {
+        // if (errorType instanceof HttpErrorType) {
+        //     if (!errorType.code || typeof errorType.code !== 'number') throw new Error('An instance of HttpErrorType needs a \'code\' number parameter');
+        //     if (!errorType.type || typeof errorType.type !== 'string') throw new Error('An instance of HttpErrorType needs a \'type\' string parameter');
+        //     if (typeof errorType.message !== 'string') throw new Error('An instance of HttpErrorType needs a \'message\' string parameter');
         // }
 
-        if (ApiError._types[errorType.type]) {
-            throw new Error(`An ApiErrorType with type "${errorType.type}" already exists`);
+        if (HttpError._types[errorType.type]) {
+            throw new Error(`An HttpErrorType with type "${errorType.type}" already exists`);
         } else {
-            ApiError._types[errorType.type] = errorType;
+            HttpError._types[errorType.type] = errorType;
         }
     }
 
-    public static overrideType(errorType: ApiErrorType) {
-        if (!ApiError._types[errorType.type]) {
-            throw new Error(`An ApiErrorType with type "${errorType.type}" doesn't exist, so it cannot be overridden`);
+    public static overrideType(errorType: HttpErrorType) {
+        if (!HttpError._types[errorType.type]) {
+            throw new Error(`An HttpErrorType with type "${errorType.type}" doesn't exist, so it cannot be overridden`);
         } else {
-            // logger.warn(`ApiErrorType with type "${errorType.type}" has been overridden`);
-            ApiError._types[errorType.type] = errorType;
+            // logger.warn(`HttpErrorType with type "${errorType.type}" has been overridden`);
+            HttpError._types[errorType.type] = errorType;
         }
     }
 
@@ -74,7 +74,7 @@ export class ApiError extends Error {
         for (const errorName in errors) {
             if (errors.hasOwnProperty(errorName)) {
                 const error = errors[errorName];
-                ApiError.addType({
+                HttpError.addType({
                     code: error.status,
                     type: errorName,
                     message: error.message
@@ -87,22 +87,22 @@ export class ApiError extends Error {
      *  Instance members
      */
 
-    protected _errorType: ApiErrorType;
+    public readonly type: HttpErrorType;
 
-    constructor(errorType?: ApiErrorType | string | number) {
+    constructor(errorType?: HttpErrorType | string | number) {
         // Initialize error list
-        if (!ApiError._types) { ApiError.initTypes(); }
+        if (!HttpError._types) { HttpError.initTypes(); }
 
         if (!errorType) {
-            errorType = ApiError._types.default;
+            errorType = HttpError._types.default;
         }
 
         // Find error type
-        let error: ApiErrorType;
+        let error: HttpErrorType;
         if (typeof errorType === 'string') {
-            error = errorType = ApiError._types[errorType];
+            error = errorType = HttpError._types[errorType];
         } else if (typeof errorType === 'number') {
-            error = ApiError._types.find((e: any) => !!ApiError._types[e] && ApiError._types[e].status === 'number');
+            error = HttpError._types.find((e: any) => !!HttpError._types[e] && HttpError._types[e].status === 'number');
         }
 
         if (!error) {
@@ -116,10 +116,10 @@ export class ApiError extends Error {
         if (error.message) { string += `: ${error.message}`; }
         super(string);
 
-        this._errorType = error;
+        this.type = error;
     }
 
     public sendResponse(res: Response) {
-        res.status(this._errorType.code || 500).send({ error: this._errorType.type });
+        res.status(this.type.code || 500).send({ error: this.type.type });
     }
 }
