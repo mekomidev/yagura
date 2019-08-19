@@ -1,4 +1,4 @@
-import { Yagura } from '../yagura';
+import { Yagura } from '../framework/yagura';
 import { Logger } from '../modules/logger.module';
 import { HttpRequest } from './httpServer.overlay';
 
