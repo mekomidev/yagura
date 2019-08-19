@@ -1,6 +1,6 @@
-import { Yagura } from '../yagura';
-import { eventFilter } from '../event';
-import { Overlay, OverlayConfig } from '../overlay';
+import { Yagura } from '../framework/yagura';
+import { eventFilter } from '../framework/event';
+import { Overlay, OverlayConfig } from '../framework/overlay';
 import { YaguraError } from '../utils/errors';
 
 import { Logger } from '../modules/logger.module';
