@@ -33,7 +33,7 @@ export class HttpServerOverlay extends Overlay {
     private _expressMiddleware: [() => RequestHandler];
 
     /** Initializes the overlay
-     * 
+     *
      * @param {HttpOverlayConfig} config
      * @param {[() => RequestHandler]} middleware Ordered array of Express.js middleware factory functions to be mounted
      */
