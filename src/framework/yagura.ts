@@ -39,6 +39,7 @@ export class Yagura {
         // Initialize Overlay
         this._stack = overlays;
 
+        // TODO: consider cache impact given by reverting the array
         for (const o of this._stack.reverse()) {
             try {
                 await o.initialize();
