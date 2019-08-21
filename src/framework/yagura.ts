@@ -1,11 +1,12 @@
 import { Overlay } from './overlay';
 import { Module } from './module';
-import { YaguraError, StubError } from './utils/errors';
-import { Logger, DefaultLogger } from './modules/logger.module';
+import { YaguraError, StubError } from '../utils/errors';
+import { Logger, DefaultLogger } from '../modules/logger.module';
 
 import _colors = require('colors');
 import { YaguraEvent } from './event';
-import { HandleGuard } from './utils/handleGuard';
+import { HandleGuard } from '../utils/handleGuard';
+import { ServerEvent, ServerEventType } from './server.event';
 
 export class Yagura {
     private static _stack: Overlay[];
@@ -176,6 +177,8 @@ export class Yagura {
 
     private static async _handleShutdown() {
         this.logger.info('Shutting down...');
+        // TODO: verify if needed
+        // await Yagura.dispatch(new ServerEvent(ServerEventType.shutdown));
     }
 }
 

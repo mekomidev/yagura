@@ -1,11 +1,11 @@
 import { Yagura } from "./yagura";
-import { deepFreeze } from "./utils/objectUtils";
-import { HandleGuard } from "./utils/handleGuard";
+import { deepFreeze } from "../utils/objectUtils";
+import { HandleGuard } from "../utils/handleGuard";
 
 export abstract class YaguraEvent {
     protected data: any;
 
-    constructor(data: any) {
+    constructor(data?: any) {
         this.data = data;
     }
 

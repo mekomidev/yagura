@@ -1,4 +1,4 @@
-import { deepFreeze } from './utils/objectUtils';
+import { deepFreeze } from '../utils/objectUtils';
 import { YaguraEvent, EventHandler, EventFilter } from './event';
 import { Yagura } from './yagura';
 
