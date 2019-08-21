@@ -3,7 +3,7 @@ import _colors = require('colors');
 
 export abstract class Logger extends Module {
     constructor(vendor: string) {
-        super(vendor, 'Logger');
+        super('Logger', vendor);
     }
 
     // TODO: review which logging level standard to adopt, like POSIX, Winston, etc.

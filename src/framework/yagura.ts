@@ -39,6 +39,7 @@ export class Yagura {
         // Initialize Overlay
         this._stack = overlays;
 
+        // TODO: consider cache impact given by reverting the array
         for (const o of this._stack.reverse()) {
             try {
                 await o.initialize();
@@ -180,8 +181,7 @@ export class Yagura {
 
     private static async _handleShutdown() {
         this.logger.info('Shutting down...');
-        // TODO: verify if needed
-        // await Yagura.dispatch(new ServerEvent(ServerEventType.shutdown));
+        await Yagura.dispatch(new ServerEvent(ServerEventType.shutdown));
     }
 }
 
