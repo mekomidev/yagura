@@ -27,8 +27,8 @@ export interface HttpApiConfig {
 export abstract class HttpApiOverlay extends Overlay {
     private _router: HttpRouter;
 
-    constructor(name: string, version: SemVer.SemVer, vendor: string, config: HttpApiConfig, yaguraVersion?: SemVer.Range) {
-        super(name, version, vendor, config, yaguraVersion);
+    constructor(name: string, config: HttpApiConfig, yaguraVersion?: SemVer.Range) {
+        super(name, config, yaguraVersion);
 
         try {
             // TODO: decouple FmwRouter from here, set as default, but allow specifying a custom router

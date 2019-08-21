@@ -4,11 +4,9 @@ import { Overlay } from "../framework/overlay";
 import { Logger } from "../modules/logger.module";
 import { HttpError, HttpErrorType } from './errors/http.error';
 
-import * as http from 'http';
 import { Express as ExpressApp, Response, Request } from 'express';
 import * as express from 'express';
 import { RequestHandler } from "express-serve-static-core";
-import * as SemVer from "semver";
 
 export interface HttpServerConfig {
     port: number;
@@ -33,7 +31,7 @@ export class HttpServerOverlay extends Overlay {
      * @param {[() => RequestHandler]} middleware Ordered array of Express.js middleware factory functions to be mounted
      */
     constructor(config: HttpServerConfig, middleware?: [() => RequestHandler]) {
-        super('HttpServer', new SemVer.SemVer('0.0.1'), 'mekomi', config);
+        super('HttpServer', config);
         this._expressMiddleware = middleware;
 
         // Initialize all defined error types
