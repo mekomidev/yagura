@@ -150,11 +150,22 @@ export class HttpRequest extends YaguraEvent implements HttpEventData {
     }
 
     // Response methods
+    /**
+     * Send a response to this [HttpRequest]
+     *
+     * @param {Number} status HTTP status code to respond with
+     * @param {any} data HTTP response body contents
+     */
     public async send(status: number, data?: any): Promise<Response> {
         this.res.status(status).send(data).end();
         return this.res;
     }
 
+    /**
+     * Send a response to this [HttpRequest] based on an [Error]
+     *
+     * @param {Error} err The error to be parsed into a response
+     */
     public async sendError(err: Error): Promise<Response> {
         if (err instanceof HttpError) {
             this.res.status(err.type.code).send(err.type.type).end();
