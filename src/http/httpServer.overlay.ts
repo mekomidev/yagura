@@ -20,7 +20,7 @@ export interface HttpServerConfig {
 /**
  * Express.js-based HTTP server overlay.
  * Starts a HTTP server on the given port with the given configuration and middleware,
- * and dispatches [HttpRequest] events through Yagura, to be handled by [HttpRouterOverlay] instances.
+ * and dispatches [HttpRequest] events through Yagura, to be handled by [HttpApiOverlay] instances.
  */
 export class HttpServerOverlay extends Overlay {
    private logger: Logger;

@@ -29,7 +29,7 @@ export type EventFilter = (event: YaguraEvent) => boolean;
  *
  * Use this in your Overlay to reduce event processing overhead.
  *
- * Example: "@eventFilter(HttpRequestEvent)" on handleEvent() of a HttpRouterOverlay
+ * Example: "@eventFilter(HttpRequestEvent)" on handleEvent() of a HttpApiOverlay
  *
  * @param {(typeof YaguraEvent)[] | EventFilter} filter
  */

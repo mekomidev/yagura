@@ -10,7 +10,7 @@ import { HttpServerOverlay, HttpRequest } from './httpServer.overlay';
 import { HttpRoute, CrudAdapter } from './router';
 import * as SemVer from 'semver';
 
-export interface HttpRouterConfig {
+export interface HttpApiConfig {
     options: {
         debugTime: boolean;
     };
@@ -20,13 +20,13 @@ export interface HttpRouterConfig {
  * Abstract HTTP router definition.
  *
  * In a Yagura application with a HttpServerOverlay mounted,
- * the HttpRouterOverlay (mounted afterwards) receives the HTTP requests
+ * the HttpApiOverlay (mounted afterwards) receives the HTTP requests
  * and routes them per user's definition.
  */
-export abstract class HttpRouterOverlay extends Overlay {
+export abstract class HttpApiOverlay extends Overlay {
     private _router: HttpRoute;
 
-    constructor(name: string, version: SemVer.SemVer, vendor: string, config: HttpRouterConfig, yaguraVersion?: SemVer.Range) {
+    constructor(name: string, version: SemVer.SemVer, vendor: string, config: HttpApiConfig, yaguraVersion?: SemVer.Range) {
         super(name, version, vendor, config, yaguraVersion);
 
         try {
