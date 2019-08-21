@@ -1,6 +1,6 @@
 import { YaguraEvent, eventFilter } from "../framework/event";
 import { Yagura } from "../framework/yagura";
-import { Overlay, OverlayConfig } from "../framework/overlay";
+import { Overlay } from "../framework/overlay";
 import { Logger } from "../modules/logger.module";
 import { HttpError, HttpErrorType } from './errors/http.error';
 
@@ -8,16 +8,13 @@ import * as http from 'http';
 import { Express as ExpressApp, Response, Request } from 'express';
 import * as express from 'express';
 import { RequestHandler } from "express-serve-static-core";
-
-export interface HttpOverlayConfig extends OverlayConfig {
-    overlay: HttpServerConfig;
-}
+import * as SemVer from "semver";
 
 export interface HttpServerConfig {
     port: number;
     errorCodes?: [HttpErrorType];
     defaultError: string | number;
-    expressSettings: {[key: string]: any};
+    expressSettings?: {[key: string]: any};
 }
 
 /**
@@ -26,9 +23,7 @@ export interface HttpServerConfig {
  * and dispatches [HttpRequest] events through Yagura, to be handled by [HttpRouterOverlay] instances.
  */
 export class HttpServerOverlay extends Overlay {
-    public readonly config: HttpOverlayConfig;
-
-    private logger: Logger;
+   private logger: Logger;
     private _express: ExpressApp;
     private _expressMiddleware: [() => RequestHandler];
 
@@ -37,8 +32,8 @@ export class HttpServerOverlay extends Overlay {
      * @param {HttpOverlayConfig} config
      * @param {[() => RequestHandler]} middleware Ordered array of Express.js middleware factory functions to be mounted
      */
-    constructor(config: HttpOverlayConfig, middleware: [() => RequestHandler]) {
-        super(config);
+    constructor(config: HttpServerConfig, middleware?: [() => RequestHandler]) {
+        super('HttpServer', new SemVer.SemVer('0.0.1'), 'mekomi', config);
         this._expressMiddleware = middleware;
 
         // Initialize all defined error types
@@ -101,6 +96,9 @@ export class HttpServerOverlay extends Overlay {
                 // ...but carefully, never trust devs, what if THAT crashes?
                 this.logger.error(`Yo, seriously?`);
             }
+
+            // TODO: verify if necessary
+            next();
         });
 
         // Start server

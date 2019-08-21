@@ -1,6 +1,6 @@
 import { Yagura } from '../framework/yagura';
 import { eventFilter } from '../framework/event';
-import { Overlay, OverlayConfig } from '../framework/overlay';
+import { Overlay } from '../framework/overlay';
 import { YaguraError } from '../utils/errors';
 
 import { Logger } from '../modules/logger.module';
@@ -8,10 +8,7 @@ import { Logger } from '../modules/logger.module';
 import { HttpError, HttpErrorType } from './errors/http.error';
 import { HttpServerOverlay, HttpRequest } from './httpServer.overlay';
 import { HttpRoute, CrudAdapter } from './router';
-
-export interface HttpRouterOverlayConfig extends OverlayConfig {
-    overlay: HttpRouterConfig;
-}
+import * as SemVer from 'semver';
 
 export interface HttpRouterConfig {
     options: {
@@ -29,8 +26,8 @@ export interface HttpRouterConfig {
 export abstract class HttpRouterOverlay extends Overlay {
     private _router: HttpRoute;
 
-    constructor(config: OverlayConfig) {
-        super(config);
+    constructor(name: string, version: SemVer.SemVer, vendor: string, config: HttpRouterConfig, yaguraVersion?: SemVer.Range) {
+        super(name, version, vendor, config, yaguraVersion);
 
         try {
             this._router = new HttpRoute('');
