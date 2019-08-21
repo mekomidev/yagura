@@ -7,8 +7,11 @@ import _colors = require('colors');
 import { YaguraEvent } from './event';
 import { HandleGuard } from '../utils/handleGuard';
 import { ServerEvent, ServerEventType } from './server.event';
+import { SemVer } from 'semver';
 
 export class Yagura {
+    public static readonly version: SemVer = new SemVer('0.0.1');
+
     private static _stack: Overlay[];
     protected static logger: Logger;
 

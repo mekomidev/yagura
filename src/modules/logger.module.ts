@@ -1,4 +1,4 @@
-import { Module } from '../module';
+import { Module } from '../framework/module';
 import _colors = require('colors');
 
 export abstract class Logger extends Module {

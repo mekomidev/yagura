@@ -20,3 +20,5 @@ export class StubError extends Error {
         super('Stub call: this function has not been overriden properly\nAlso double error! You should use an abstract method instead of this, douchenozzle!');
     }
 }
+
+export class VersionMismatchError extends YaguraError {}
