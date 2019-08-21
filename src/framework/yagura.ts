@@ -180,8 +180,7 @@ export class Yagura {
 
     private static async _handleShutdown() {
         this.logger.info('Shutting down...');
-        // TODO: verify if needed
-        // await Yagura.dispatch(new ServerEvent(ServerEventType.shutdown));
+        await Yagura.dispatch(new ServerEvent(ServerEventType.shutdown));
     }
 }
 
