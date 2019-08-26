@@ -1,4 +1,4 @@
-import { HttpRequest } from "../httpServer.overlay";
+import { HttpRequest } from "../http";
 
 export class RestImplementationError extends Error {
     public readonly method: string;

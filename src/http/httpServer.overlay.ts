@@ -3,8 +3,9 @@ import { Yagura } from "../framework/yagura";
 import { Overlay } from "../framework/overlay";
 import { Logger } from "../modules/logger.module";
 import { HttpError, HttpErrorType } from './errors/http.error';
+import { HttpRequest } from './http';
 
-import { Express as ExpressApp, Response, Request } from 'express';
+import { Express as ExpressApp } from 'express';
 import * as express from 'express';
 import { RequestHandler } from "express-serve-static-core";
 
@@ -21,7 +22,9 @@ export interface HttpServerConfig {
  * and dispatches [HttpRequest] events through Yagura, to be handled by [HttpApiOverlay] instances.
  */
 export class HttpServerOverlay extends Overlay {
-   private logger: Logger;
+    public readonly config: HttpServerConfig;
+
+    private logger: Logger;
     private _express: ExpressApp;
     private _expressMiddleware: [() => RequestHandler];
 
@@ -32,11 +35,11 @@ export class HttpServerOverlay extends Overlay {
      */
     constructor(config: HttpServerConfig, middleware?: [() => RequestHandler]) {
         super('HttpServer', config);
-        this._expressMiddleware = middleware;
+        this._expressMiddleware = middleware || [] as any;
 
         // Initialize all defined error types
-        if (this.config.overlay.errorCodes && this.config.overlay.errorCodes.length > 0) {
-            this.config.overlay.errorCodes.forEach((errorCode) => {
+        if (this.config.errorCodes && this.config.errorCodes.length > 0) {
+            this.config.errorCodes.forEach((errorCode) => {
                 HttpError.addType(errorCode);
             });
         }
@@ -44,11 +47,13 @@ export class HttpServerOverlay extends Overlay {
 
     /** Creates an Express app instance and starts a HTTP server */
     public async initialize() {
+        this.logger = Yagura.getModule('Logger');
+
         if (this._express) {
             throw new Error('This strategy has already been started');
         }
 
-        const port: number = parseInt(process.env.HTTP_PORT, 10) || this.config.overlay.port;
+        const port: number = parseInt(process.env.HTTP_PORT, 10) || this.config.port;
 
         // Initialize Express
         const app: ExpressApp = express();
@@ -58,9 +63,9 @@ export class HttpServerOverlay extends Overlay {
             app.use(m());
         }
         // Apply settings
-        for (const key in this.config.overlay.expressSettings) {
-            if (this.config.overlay.expressSettings.hasProperty(key)) {
-                app.set(key, this.config.overlay.expressSettings[key]);
+        for (const key in this.config.expressSettings) {
+            if (this.config.expressSettings.hasProperty(key)) {
+                app.set(key, this.config.expressSettings[key]);
             }
         }
 
@@ -103,7 +108,7 @@ export class HttpServerOverlay extends Overlay {
         this._express = app;
         await new Promise((resolve, reject) => {
             this._express.listen(port, () => {
-                // this.logger.info(`Server listening on`.green + `port ${port}`.bold);
+                this.logger.info(`Server listening on port`.green + ` ${port}`.bold);
                 resolve();
             });
         });
@@ -116,60 +121,9 @@ export class HttpServerOverlay extends Overlay {
      */
     public async handleEvent(event: HttpRequest): Promise<YaguraEvent> {
         // Send the default error response
-        (new HttpError(this.config.overlay.defaultError || 404)).sendResponse(event.res);
+        (new HttpError(this.config.defaultError || 404)).sendResponse(event.res);
 
         // The HttpRequest will always be ansered to here and never forwarded further
         return null;
-    }
-}
-
-export interface HttpEventData {
-    req: Request;
-    res: Response;
-}
-
-/**
- * A [YaguraEvent] subclass representing a HTTP request.
- * Incapsules [req] and [res] objects in order to pass them through the overlay stack.
- */
-export class HttpRequest extends YaguraEvent implements HttpEventData {
-    protected readonly data: HttpEventData;
-
-    // Incoming data
-    public readonly req: Request;
-    public readonly res: Response;
-
-    constructor(data: HttpEventData) {
-        super(data);
-        this.req = data.req;
-        this.res = data.res;
-    }
-
-    // Response methods
-    /**
-     * Send a response to this [HttpRequest]
-     *
-     * @param {Number} status HTTP status code to respond with
-     * @param {any} data HTTP response body contents
-     */
-    public async send(status: number, data?: any): Promise<Response> {
-        this.res.status(status).send(data).end();
-        return this.res;
-    }
-
-    /**
-     * Send a response to this [HttpRequest] based on an [Error]
-     *
-     * @param {Error} err The error to be parsed into a response
-     */
-    public async sendError(err: Error): Promise<Response> {
-        if (err instanceof HttpError) {
-            this.res.status(err.type.code).send(err.type.type).end();
-        } else {
-            // TODO: consider not sending the stack when in productioj
-            this.res.status(500).send(err.stack).end();
-        }
-
-        return this.res;
     }
 }

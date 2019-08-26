@@ -1,8 +1,7 @@
 import { Yagura } from '../..';
 import { Logger } from '../../modules/logger.module';
 
-import { HttpRequest } from '../httpServer.overlay';
-import { HttpRoute, HttpRouter, HttpMethod, HttpRouteCallback } from '../httpApi.overlay';
+import { HttpRequest, HttpRoute, HttpRouter, HttpMethod, HttpRouteCallback } from '../http';
 
 import * as path from 'path';
 import * as FindMyWay from 'find-my-way';
