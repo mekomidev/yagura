@@ -58,7 +58,7 @@ export class Yagura {
      */
     public static async dispatch(event: YaguraEvent): Promise<void> {
         // Check if event was handled already
-        if (event.guard.wasHandled) {
+        if (event.guard.wasHandled()) {
             this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
 
             if (process.env.NODE_ENV !== 'production') {
@@ -150,7 +150,7 @@ export class Yagura {
             this._modules[mod.name] = m;
         } else {
             if (m.vendors[mod.vendor]) {
-                throw new YaguraError(`Module '${mod.name}' has already been registered for vendor '${mod.vendor}'`);
+                // throw new YaguraError(`Module '${mod.name}' has already been registered for vendor '${mod.vendor}'`);
             } else {
                 m.active = mod;
                 m.vendors[mod.vendor] = mod;
@@ -162,23 +162,28 @@ export class Yagura {
     }
 
     public static async handleError(e: Error | YaguraError) {
-        // Wrap the error in YaguraError if it isn't already
-        // TODO: consider whether this approach is appropriate
-        let err: YaguraError;
-        if (e instanceof YaguraError) {
-            err = e;
-        } else {
-            e = new YaguraError(e);
-        }
+        // Everything's wrapped in a try-catch to avoid infinite loops
+        try {
+            // Wrap the error in YaguraError if it isn't already
+            // TODO: consider whether this approach is appropriate
+            let err: YaguraError;
+            if (e instanceof YaguraError) {
+                err = e;
+            } else {
+                err = new YaguraError(e);
+            }
 
-        // Check if event was handled already
-        if (err.guard.wasHandled) {
-            this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop\n${event.toString()}`);
-        } else {
-            err.guard.flagHandled();
-        }
+            // Check if event was handled already
+            if (!!err.guard.wasHandled()) {
+                this.logger.warn(`An already handled error has been sent to Yagura for handling again; this could cause an error handling loop\n${err.stack}`);
+            } else {
+                err.guard.flagHandled();
+            }
 
-        this.logger.error(err);
+            this.logger.error(err);
+        } catch (err) {
+            console.error(`FAILED TO HANDLE ERROR\n${err.stack}`);
+        }
     }
 
     private static async _handleShutdown() {
