@@ -3,6 +3,7 @@
         "target": "es6",
         "module": "commonjs",
         "sourceMap": true,
+        "incremental": true,
         // "outDir": "lib/js",
         "typeRoots": ["./typings/modules", "./typings/globals"],
         "experimentalDecorators": true,

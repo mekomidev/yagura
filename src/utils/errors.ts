@@ -1,4 +1,18 @@
 import * as express from 'express';
+import { HandleGuard } from './handleGuard';
+
+export class YaguraError extends Error {
+
+    constructor(err: Error | string) {
+        super(err instanceof Error ? err.stack : err);
+
+        if (err instanceof Error) {
+            Object.assign(this, err);
+        }
+    }
+
+    public readonly guard: HandleGuard = new HandleGuard();
+}
 
 /** Error to be thrown when a method is not overriden properly (please don't use this) */
 export class StubError extends Error {
@@ -7,4 +21,4 @@ export class StubError extends Error {
     }
 }
 
-export class YaguraError extends Error {}
+export class VersionMismatchError extends YaguraError {}
