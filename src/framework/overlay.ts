@@ -51,6 +51,6 @@ export abstract class Overlay implements EventHandler {
     }
 
     public toString(): string {
-        return `${this.config.vendor}#${this.config.name} (${this.config.version})`;
+        return `${this.name}`;
     }
 }

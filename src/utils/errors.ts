@@ -4,7 +4,7 @@ import { HandleGuard } from './handleGuard';
 export class YaguraError extends Error {
 
     constructor(err: Error | string) {
-        super(err instanceof Error ? err.message : err);
+        super(err instanceof Error ? err.stack : err);
 
         if (err instanceof Error) {
             Object.assign(this, err);
