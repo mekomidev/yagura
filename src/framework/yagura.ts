@@ -9,6 +9,8 @@ import { HandleGuard } from '../utils/handleGuard';
 import { ServerEvent, ServerEventType } from './server.event';
 import { SemVer } from 'semver';
 
+const colors = require('colors');
+
 export class Yagura {
     public static readonly version: SemVer = new SemVer('0.0.1');
 
