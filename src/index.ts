@@ -1,7 +1,7 @@
 // Framework APIs
 import { Yagura } from './framework/yagura';
 import { Overlay } from './framework/overlay';
-import { Module } from './framework/module';
+import { Service } from './framework/service';
 
 import { YaguraError, VersionMismatchError } from './utils/errors';
 import { TimeoutError, promiseTimeout } from './utils/promise.utils';
@@ -11,7 +11,7 @@ export {
     // Framework
     Yagura,
     Overlay,
-    Module,
+    Service,
     // Errors
     YaguraError, VersionMismatchError, TimeoutError,
     // Utils

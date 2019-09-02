@@ -1,7 +1,7 @@
 import { Overlay } from './overlay';
-import { Module } from './module';
+import { Service } from './service';
 import { YaguraError, StubError } from '../utils/errors';
-import { Logger, DefaultLogger } from '../modules/logger.module';
+import { Logger, DefaultLogger } from '../services/logger.service';
 
 import _colors = require('colors');
 import { YaguraEvent } from './event';
@@ -35,8 +35,8 @@ export class Yagura {
             await this.handleError(err);
         });
 
-        // Initialize base modules
-        Yagura.logger = Yagura.registerModule(new DefaultLogger());
+        // Initialize base services
+        Yagura.logger = Yagura.registerService(new DefaultLogger());
 
         // Initialize Overlay
         this._stack = overlays;
@@ -92,21 +92,21 @@ export class Yagura {
     }
 
     /*
-     *  Modules subsystem
+     *  Services subsystem
      */
-    private static _modules: { [name: string]: ModuleHolder<any> } = {};
+    private static _services: { [name: string]: ServiceHolder<any> } = {};
     // {
     //     "name": {
-    //         active: Module,
+    //         active: Service,
     //         vendors: {
-    //             "default": Module,
-    //             "vendor1": Module
+    //             "default": Service,
+    //             "vendor1": Service
     //         }
     //     }
     // }
 
-    public static getModule<M extends Module>(name: string, vendor?: string): M {
-        const m: ModuleHolder<M> = this._modules[name];
+    public static getService<M extends Service>(name: string, vendor?: string): M {
+        const m: ServiceHolder<M> = this._services[name];
 
         if (!m) {
             return null;
@@ -124,18 +124,18 @@ export class Yagura {
     }
 
     /**
-     * Returns a Module proxy object, which will always store the reference to the active instance of the requested Module
+     * Returns a Service proxy object, which will always store the reference to the active instance of the requested Service
      *
-     * @param name name of the Module to be adapted
-     * @returns {Module} a Module proxy for the requested Module
+     * @param name name of the Service to be adapted
+     * @returns {Service} a Service proxy for the requested Service
      */
-    public static getModuleProxy<M extends Module>(name: string): M {
+    public static getServiceProxy<M extends Service>(name: string): M {
         throw new StubError();
         return null;
     }
 
-    public static registerModule<M extends Module>(mod: M): M {
-        let m: ModuleHolder<M> = this._modules[mod.name];
+    public static registerService<M extends Service>(mod: M): M {
+        let m: ServiceHolder<M> = this._services[mod.name];
 
         if (!m) {
             m = {
@@ -147,10 +147,10 @@ export class Yagura {
 
             m.vendors[mod.vendor] = mod;
 
-            this._modules[mod.name] = m;
+            this._services[mod.name] = m;
         } else {
             if (m.vendors[mod.vendor]) {
-                // throw new YaguraError(`Module '${mod.name}' has already been registered for vendor '${mod.vendor}'`);
+                // throw new YaguraError(`Service '${mod.name}' has already been registered for vendor '${mod.vendor}'`);
             } else {
                 m.active = mod;
                 m.vendors[mod.vendor] = mod;
@@ -158,7 +158,7 @@ export class Yagura {
         }
 
         // TODO: evaluate whether the proxy should be returned
-        return mod; // this.getModuleProxy(mod.name);
+        return mod; // this.getServiceProxy(mod.name);
     }
 
     public static async handleError(e: Error | YaguraError) {
@@ -192,7 +192,7 @@ export class Yagura {
     }
 }
 
-interface ModuleHolder<M extends Module> {
+interface ServiceHolder<M extends Service> {
     active: M;
     vendors: { [name: string]: M };
 }

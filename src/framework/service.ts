@@ -1,5 +1,5 @@
 
-export abstract class Module {
+export abstract class Service {
     public readonly vendor: string;
     public readonly name: string;
 
