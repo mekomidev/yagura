@@ -2,10 +2,10 @@
     "compilerOptions": {
         "target": "es6",
         "module": "commonjs",
+        "declaration": true,
         "sourceMap": true,
         "incremental": true,
-        // "outDir": "lib/js",
-        "typeRoots": ["./typings/modules", "./typings/globals"],
+        "outDir": "./lib/js",
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "alwaysStrict": true
