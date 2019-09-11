@@ -11,7 +11,7 @@ cache:
     - node_modules
 
 install:
-  - npm install -devDepenencies
+  - npm install --devDepenencies
 script:
   - npm run test
 after_script:
