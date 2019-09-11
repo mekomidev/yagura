@@ -1,9 +1,9 @@
 {
     "name": "@yagura/yagura",
-    "version": "0.0.2",
+    "version": "0.0.3-rc.1",
     "description": "A solid, event-based layered web framework - written in TypeScript for Node.js",
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts",
+    "main": "lib/js/index.js",
+    "types": "lib/declarations/index.d.ts",
     "scripts": {
         "clean": "rm -rf ./lib",
         "build": "./node_modules/typescript/bin/tsc",
