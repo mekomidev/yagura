@@ -9,7 +9,7 @@ import { HandleGuard } from '../utils/handleGuard';
 import { ServerEvent, ServerEventType } from './server.event';
 import { SemVer } from 'semver';
 
-const colors = require('colors');
+import 'colors';
 
 const yaguraPackage = require('../../package.json');
 
