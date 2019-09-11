@@ -1,6 +1,6 @@
 {
     "name": "@yagura/yagura",
-    "version": "0.0.3-rc.1",
+    "version": "0.0.3-rc.2",
     "description": "A solid, event-based layered web framework - written in TypeScript for Node.js",
     "main": "lib/js/index.js",
     "types": "lib/declarations/index.d.ts",
@@ -49,7 +49,9 @@
         "colors": "^1.3.3",
         "config": "^3.0.1",
         "moment": "^2.23.0",
-        "semver": "6.3.0",
         "winston": "^3.1.0"
+    },
+    "peerDependencies": {
+        "semver": "6.*"
     }
 }
