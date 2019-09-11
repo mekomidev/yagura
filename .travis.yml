@@ -1,0 +1,18 @@
+language: node_js
+node_js:
+  - 10
+  - 11
+  - 12
+
+sudo: false
+
+cache:
+  directories:
+    - node_modules
+
+script:
+  - npm run test
+after_script:
+  - |
+    npm install --save-dev coveralls@3.*
+    coveralls < ./coverage/lcov.info
