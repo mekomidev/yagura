@@ -17,7 +17,7 @@ describe('Services', () => {
     describe('Service class', () => {
         it('should instantiate correctly and be usable', async () => {
             const service: DummyService = new DummyService();
-            expect(service.hello()).to.be('world');
+            expect(service.hello()).to.equal('world');
         });
     });
 
