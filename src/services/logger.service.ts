@@ -1,7 +1,7 @@
-import { Module } from '../framework/module';
+import { Service } from '../framework/service';
 import _colors = require('colors');
 
-export abstract class Logger extends Module {
+export abstract class Logger extends Service {
     constructor(vendor: string) {
         super('Logger', vendor);
     }
@@ -15,7 +15,7 @@ export abstract class Logger extends Module {
 }
 
 /**
- * Default implementation of the Logger module;
+ * Default implementation of the Logger service;
  * Doesn't rely on any external dependencies, except for 'colors.ts' to colorize the text according to the error level
  * Uses stdout/stderr to output logs
  */
