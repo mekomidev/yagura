@@ -10,6 +10,7 @@ import { ServerEvent, ServerEventType } from './server.event';
 import { SemVer } from 'semver';
 
 import 'colors';
+import 'clarify';
 
 const yaguraPackage = require('../../package.json');
 

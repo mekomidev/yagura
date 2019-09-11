@@ -1,4 +1,3 @@
-import * as express from 'express';
 import { HandleGuard } from './handleGuard';
 
 export class YaguraError extends Error {
