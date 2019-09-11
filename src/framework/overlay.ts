@@ -1,5 +1,5 @@
 import { deepFreeze } from '../utils/objectUtils';
-import { VersionMismatchError } from '../utils/errors';
+import { VersionMismatchError, YaguraError } from '../utils/errors';
 import { YaguraEvent, EventHandler, EventFilter } from './event';
 import { Yagura } from './yagura';
 
@@ -26,7 +26,18 @@ export abstract class Overlay implements EventHandler {
         }
 
         // Deep copy config (this excludes functions!) and deep freeze it
+        // TODO: review whether this is necessary
         this.config = deepFreeze(JSON.parse(JSON.stringify(config)));
+    }
+
+    protected _yagura: Yagura;
+
+    public mount(instance: Yagura): void {
+        if (!this._yagura) {
+            this._yagura = instance;
+        } else {
+            throw new YaguraError('This overlay has already been mounted');
+        }
     }
 
     /** Called when the app is being initialized */
@@ -47,7 +58,7 @@ export abstract class Overlay implements EventHandler {
      */
     public async handleError(err: Error) {
         // overriding is optional
-        Yagura.handleError(err);
+        this._yagura.handleError(err);
     }
 
     public toString(): string {

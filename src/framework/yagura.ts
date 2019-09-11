@@ -14,36 +14,41 @@ const colors = require('colors');
 export class Yagura {
     public static readonly version: SemVer = new SemVer('0.0.1');
 
-    private static _stack: Overlay[];
-    protected static logger: Logger;
+    private _isInit: boolean;
+    private _stack: Overlay[];
+    protected logger: Logger;
 
-    public static async start(overlays: Overlay[]) {
-        if (Yagura._stack) {
-            throw new YaguraError(`Yagura has already been initialized, you cannot call start() more than once`);
+    public static async start(overlays: Overlay[]): Promise<Yagura> {
+        const app: Yagura = new Yagura(overlays);
+        await app.initialize();
+
+        return app;
+    }
+
+    private constructor(overlays: Overlay[]) {
+        // Mount handlers
+        if (process.env.NODE_ENV !== 'test') {
+            process.on('beforeExit', async () => {
+                await this._handleShutdown();
+            });
+
+            process.on('unhandledRejection', async (err: Error) => {
+                await this.handleError(err);
+            });
+
+            process.on('uncaughtException', async (err: Error) => {
+                await this.handleError(err);
+            });
         }
 
-        // Mount handlers
-        process.on('beforeExit', async () => {
-            await this._handleShutdown();
-        });
-
-        process.on('unhandledRejection', async (err: Error) => {
-            await this.handleError(err);
-        });
-
-        process.on('uncaughtException', async (err: Error) => {
-            await this.handleError(err);
-        });
-
-        // Initialize base modules
-        Yagura.logger = Yagura.registerModule(new DefaultLogger());
-
-        // Initialize Overlay
         this._stack = overlays;
+    }
 
+    public async initialize() {
         // TODO: consider cache impact given by reverting the array
         for (const o of this._stack.reverse()) {
             try {
+                o.mount(this);
                 await o.initialize();
             } catch (err) {
                 this.logger.error(`Failed to initialize overlay: ${o.toString()}`);
@@ -51,12 +56,21 @@ export class Yagura {
                 break;
             }
         }
+
+        this._isInit = true;
+
+        // Initialize base modules
+        this.logger = this.registerModule(new DefaultLogger());
     }
 
     /*
      *  Event subsystem
      */
-    public static async dispatch(event: YaguraEvent): Promise<void> {
+    public async dispatch(event: YaguraEvent): Promise<void> {
+        if (!this._isInit) {
+            throw new Error('dispatch method called before initialize');
+        }
+
         // Check if event was handled already
         if (event.guard.wasHandled()) {
             this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
@@ -94,7 +108,7 @@ export class Yagura {
     /*
      *  Modules subsystem
      */
-    private static _modules: { [name: string]: ModuleHolder<any> } = {};
+    private _modules: { [name: string]: ModuleHolder<any> } = {};
     // {
     //     "name": {
     //         active: Module,
@@ -105,7 +119,11 @@ export class Yagura {
     //     }
     // }
 
-    public static getModule<M extends Module>(name: string, vendor?: string): M {
+    public getModule<M extends Module>(name: string, vendor?: string): M {
+        if (!this._isInit) {
+            throw new Error('getModule method called before initialize');
+        }
+
         const m: ModuleHolder<M> = this._modules[name];
 
         if (!m) {
@@ -129,12 +147,20 @@ export class Yagura {
      * @param name name of the Module to be adapted
      * @returns {Module} a Module proxy for the requested Module
      */
-    public static getModuleProxy<M extends Module>(name: string): M {
+    public getModuleProxy<M extends Module>(name: string): M {
+        if (!this._isInit) {
+            throw new Error('getModuleProxy method called before initialize');
+        }
+
         throw new StubError();
         return null;
     }
 
-    public static registerModule<M extends Module>(mod: M): M {
+    public registerModule<M extends Module>(mod: M): M {
+        if (!this._isInit) {
+            throw new Error('registerModule method called before initialize');
+        }
+
         let m: ModuleHolder<M> = this._modules[mod.name];
 
         if (!m) {
@@ -161,7 +187,11 @@ export class Yagura {
         return mod; // this.getModuleProxy(mod.name);
     }
 
-    public static async handleError(e: Error | YaguraError) {
+    public async handleError(e: Error | YaguraError) {
+        if (!this._isInit) {
+            throw new Error('handleError method called before initialize');
+        }
+
         // Everything's wrapped in a try-catch to avoid infinite loops
         try {
             // Wrap the error in YaguraError if it isn't already
@@ -186,9 +216,13 @@ export class Yagura {
         }
     }
 
-    private static async _handleShutdown() {
+    private async _handleShutdown() {
+        if (!this._isInit) {
+            throw new Error('_handleShutdown method called before initialize');
+        }
+
         this.logger.info('Shutting down...');
-        await Yagura.dispatch(new ServerEvent(ServerEventType.shutdown));
+        await this.dispatch(new ServerEvent(ServerEventType.shutdown));
     }
 }
 
