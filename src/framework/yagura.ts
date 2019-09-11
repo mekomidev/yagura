@@ -11,8 +11,10 @@ import { SemVer } from 'semver';
 
 const colors = require('colors');
 
+const yaguraPackage = require('../../package.json');
+
 export class Yagura {
-    public static readonly version: SemVer = new SemVer('0.0.1');
+    public static readonly version: SemVer = new SemVer(yaguraPackage.version);
 
     private _isInit: boolean;
     private _stack: Overlay[];
