@@ -2,6 +2,12 @@
 
   Yagura is a TypeScript web framework for [Node.js](http://nodejs.org), built with modern technologies in mind.
 
+
+[![npm (scoped)](https://img.shields.io/npm/v/@yagura/yagura)](https://npmjs.com/@yagura/yagura)
+<!-- [![npm](https://img.shields.io/npm/dm/@yagura/yagura)](https://npmjs.com/@yagura/yagura) -->
+![Travis (.com)](https://img.shields.io/travis/com/mekomidev/yagura)
+[![Coverage Status](https://coveralls.io/repos/github/mekomidev/yagura/badge.svg?branch=master)](https://coveralls.io/github/mekomidev/yagura?branch=master)
+
 ## Features
 
   * Modularity-oriented 
