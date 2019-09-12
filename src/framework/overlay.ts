@@ -30,11 +30,11 @@ export abstract class Overlay implements EventHandler {
         this.config = deepFreeze(JSON.parse(JSON.stringify(config)));
     }
 
-    protected _yagura: Yagura;
+    protected yagura: Yagura;
 
     public mount(instance: Yagura): void {
-        if (!this._yagura) {
-            this._yagura = instance;
+        if (!this.yagura) {
+            this.yagura = instance;
         } else {
             throw new YaguraError('This overlay has already been mounted');
         }
@@ -58,7 +58,7 @@ export abstract class Overlay implements EventHandler {
      */
     public async handleError(err: Error) {
         // overriding is optional
-        this._yagura.handleError(err);
+        this.yagura.handleError(err);
     }
 
     public toString(): string {
