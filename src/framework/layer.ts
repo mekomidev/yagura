@@ -22,7 +22,7 @@ export abstract class Layer implements EventHandler {
 
         // Compare Yagura versions if necessary
         if (!!yaguraVersion && !SemVer.satisfies(Yagura.version, yaguraVersion)) {
-            throw new VersionMismatchError(`Overlay ${this.name} requires Yagura@${yaguraVersion}, but got ${Yagura.version}`);
+            throw new VersionMismatchError(`Overlay ${this.name} requires Yagura@${yaguraVersion.format()}, but got ${Yagura.version.format()}`);
         }
 
         // Deep copy config (this excludes functions!) and deep freeze it
@@ -41,14 +41,14 @@ export abstract class Layer implements EventHandler {
     }
 
     /** Called when the app is being initialized */
-    public abstract async initialize(): Promise<void>;
+    public abstract initialize(): Promise<void>;
 
     /**
      * Handles incoming events
      *
      * @returns {YaguraEvent} event to be handled by the underlying layers; if null, the handling loop stops for that event
      */
-    public abstract async handleEvent(e: YaguraEvent): Promise<YaguraEvent>;
+    public abstract handleEvent(e: YaguraEvent): Promise<YaguraEvent>;
 
     /**
      * Called whenever an unhandled error is thrown in the app.
@@ -56,9 +56,9 @@ export abstract class Layer implements EventHandler {
      *
      * @param err
      */
-    public async handleError(err: Error) {
+    public async handleError(err: Error): Promise<void> {
         // overriding is optional
-        this.yagura.handleError(err);
+        await this.yagura.handleError(err);
     }
 
     public toString(): string {

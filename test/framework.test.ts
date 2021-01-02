@@ -6,6 +6,7 @@ import { expect } from 'chai';
 describe('Framework', () => {
     it('should instantiate and initialize correctly', async () => {
         const app: Yagura = await Yagura.start([]);
+        expect(app).to.be.instanceOf(Yagura);
     });
 
     describe('Service handling', () => {

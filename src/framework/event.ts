@@ -33,9 +33,9 @@ export type EventFilter = (event: YaguraEvent) => boolean;
  *
  * @param {(typeof YaguraEvent)[] | EventFilter} filter
  */
-export function eventFilter(filter: Array<typeof YaguraEvent> | EventFilter) {
+export function eventFilter(filter: typeof YaguraEvent[] | EventFilter) {
     if (filter instanceof Array) {
-        const allowedEvents: Array<typeof YaguraEvent> = filter;
+        const allowedEvents: typeof YaguraEvent[] = filter;
 
         return function(target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
             const original = descriptor.value;

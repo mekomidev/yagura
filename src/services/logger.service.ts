@@ -1,5 +1,5 @@
 import { Service } from '../framework/service';
-import _colors = require('colors');
+require('colors');
 
 export abstract class Logger extends Service {
     constructor(vendor: string) {
