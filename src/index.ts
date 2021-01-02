@@ -1,6 +1,6 @@
 // Framework APIs
 import { Yagura } from './framework/yagura';
-import { Overlay } from './framework/overlay';
+import { Layer } from './framework/layer';
 import { Service } from './framework/service';
 import { YaguraEvent, eventFilter } from './framework/event';
 
@@ -13,7 +13,7 @@ import { Logger, DefaultLogger } from './services/logger.service';
 export {
     // Framework
     Yagura,
-    Overlay,
+    Layer,
     Service,
     YaguraEvent,
     // Errors

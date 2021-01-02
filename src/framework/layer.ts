@@ -5,7 +5,7 @@ import { Yagura } from './yagura';
 
 import * as SemVer from 'semver';
 
-export abstract class Overlay implements EventHandler {
+export abstract class Layer implements EventHandler {
     public readonly name: string;
     public readonly yaguraVersion?: SemVer.Range;
 

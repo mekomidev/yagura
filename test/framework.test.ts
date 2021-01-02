@@ -1,4 +1,4 @@
-import { Yagura, Overlay, Service } from '../src';
+import { Yagura, Layer, Service } from '../src';
 
 import 'mocha';
 import { expect } from 'chai';

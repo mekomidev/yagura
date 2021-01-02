@@ -1,4 +1,4 @@
-import { Overlay } from './overlay';
+import { Layer } from './layer';
 import { Service } from './service';
 import { YaguraError, StubError } from '../utils/errors';
 import { Logger, DefaultLogger } from '../services/logger.service';
@@ -18,17 +18,17 @@ export class Yagura {
     public static readonly version: SemVer = new SemVer(yaguraPackage.version);
 
     private _isInit: boolean;
-    private _stack: Overlay[];
+    private _stack: Layer[];
     protected logger: Logger;
 
-    public static async start(overlays: Overlay[]): Promise<Yagura> {
+    public static async start(overlays: Layer[]): Promise<Yagura> {
         const app: Yagura = new Yagura(overlays);
         await app.initialize();
 
         return app;
     }
 
-    private constructor(overlays: Overlay[]) {
+    private constructor(overlays: Layer[]) {
         // Mount handlers
         if (process.env.NODE_ENV !== 'test') {
             process.on('beforeExit', async () => {
