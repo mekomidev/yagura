@@ -16,7 +16,7 @@
         "README.md",
         "lib/"
     ],
-    "author": "James Kerber <kerberjg@mekomidev.com>",
+    "author": "James Kerber <james.kerber@mekomi.dev>",
     "license": "GPL-3.0-only",
     "repository": {
         "type": "git",
