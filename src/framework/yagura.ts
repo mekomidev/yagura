@@ -3,7 +3,7 @@ import { Service } from './service';
 import { YaguraError, StubError } from '../utils/errors';
 import { Logger, DefaultLogger } from '../services/logger.service';
 
-require('colors');
+const colors = require('colors');
 import { YaguraEvent } from './event';
 import { ServerEvent, ServerEventType } from './server.event';
 import { SemVer } from 'semver';
@@ -82,7 +82,8 @@ export class Yagura {
 
             if (process.env.NODE_ENV !== 'production') {
                 // do nothing, let it loop
-                this.logger.warn(`Re-handled event:\n${event.toString()}`);
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                this.logger.warn(`Re-handled event: ${colors.bold(event.constructor.name)}`); // TODO: implement event IDs (hashes?)
             } else {
                 // drop the event
                 this.logger.warn('Dropping event');

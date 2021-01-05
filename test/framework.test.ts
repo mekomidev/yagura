@@ -87,7 +87,113 @@ describe('Framework', () => {
         });
     });
 
-    describe('Event handling', () => {});
+    describe('Event handling', () => {
+        /** Example Layer implementation */
+        class DummyLayer extends Layer {
+            constructor(yaguraVersion?: SemVer.Range) {
+                super('Dummy', {});
+            }
+
+            public async initialize() { /* */ }
+            public async handleEvent(e: YaguraEvent): Promise<YaguraEvent> {
+                return null;
+            }
+        }
+        class DummyEvent extends YaguraEvent {
+            public dummyField: any;
+
+            public constructor(data: any) {
+                super(data);
+                this.dummyField = data;
+            }
+        }
+
+        it('should dispatch event to Layer', async () => {
+            const layer = new DummyLayer();
+            const app = await Yagura.start([layer]);
+            const event = new DummyEvent({ hello: 'world' });
+
+            const fake = sinon.fake.resolves(null);
+            sinon.replace(layer, 'handleEvent', fake);
+
+            await app.dispatch(event);
+
+            expect(fake.lastCall.lastArg).to.be.instanceOf(DummyEvent);
+            expect(fake.lastCall.lastArg).to.be.eq(event);
+        });
+        it('should let Layer handle event error', async () => {
+            const layer = new DummyLayer();
+            const app = await Yagura.start([layer]);
+            const event = new DummyEvent({ hello: 'world' });
+
+            const fakeEventHandler = sinon.fake.throws(new Error());
+            sinon.replace(layer, 'handleEvent', fakeEventHandler);
+
+            const fakeErrorHandler = sinon.fake.resolves(null);
+            sinon.replace(layer, 'handleError', fakeErrorHandler);
+
+            const fakeYaguraErrorHandler = sinon.fake.resolves(null);
+            sinon.replace(app, 'handleError', fakeYaguraErrorHandler);
+
+            await app.dispatch(event);
+
+            expect(fakeErrorHandler.called).to.be.eq(true);
+            expect(fakeYaguraErrorHandler.called).to.be.eq(false);
+        });
+        it('should catch Layer\'s error handling error if that crashes', async () => {
+            const layer = new DummyLayer();
+            const app = await Yagura.start([layer]);
+            const event = new DummyEvent({ hello: 'world' });
+
+            const fakeEventHandler = sinon.fake.throws(new Error());
+            sinon.replace(layer, 'handleEvent', fakeEventHandler);
+
+            const fakeErrorHandler = sinon.fake.throws(new Error());
+            sinon.replace(layer, 'handleError', fakeErrorHandler);
+
+            const fakeYaguraErrorHandler = sinon.fake.resolves(null);
+            sinon.replace(app, 'handleError', fakeYaguraErrorHandler);
+
+            await app.dispatch(event);
+
+            expect(fakeErrorHandler.called).to.be.eq(true);
+            expect(fakeYaguraErrorHandler.called).to.be.eq(true);
+        });
+        it('should not handle the same event twice in production', async () => {
+            const layer = new DummyLayer();
+            const app = await Yagura.start([layer]);
+            const event = new DummyEvent({ hello: 'world' });
+
+            const fake = sinon.fake.resolves(null);
+            sinon.replace(layer, 'handleEvent', fake);
+
+            process.env.NODE_ENV = 'production';
+
+            await app.dispatch(event);
+            await app.dispatch(event);
+
+            expect(fake.callCount).to.be.eq(1);
+
+            process.env.NODE_ENV = 'test';
+        });
+        it('should allow to handle the same event over and over in development', async () => {
+            const layer = new DummyLayer();
+            const app = await Yagura.start([layer]);
+            const event = new DummyEvent({ hello: 'world' });
+
+            const fake = sinon.fake.resolves(null);
+            sinon.replace(layer, 'handleEvent', fake);
+
+            process.env.NODE_ENV = 'development';
+
+            await app.dispatch(event);
+            await app.dispatch(event);
+
+            expect(fake.callCount).to.be.eq(2);
+
+            process.env.NODE_ENV = 'test';
+        });
+    });
 
     describe('Error handling', () => {});
 });
