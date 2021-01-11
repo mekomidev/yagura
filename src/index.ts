@@ -4,7 +4,7 @@ import { Layer } from './framework/layer';
 import { Service } from './framework/service';
 import { YaguraEvent, eventFilter } from './framework/event';
 
-import { YaguraError, VersionMismatchError } from './utils/errors';
+import { YaguraError } from './utils/errors';
 import { TimeoutError, promiseTimeout } from './utils/promise.utils';
 import { HandleGuard } from './utils/handleGuard';
 
@@ -17,7 +17,7 @@ export {
     Service,
     YaguraEvent,
     // Errors
-    YaguraError, VersionMismatchError, TimeoutError,
+    YaguraError, TimeoutError,
     // Services
     Logger, DefaultLogger,
     // Utils

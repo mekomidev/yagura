@@ -6,16 +6,11 @@ import { Logger, DefaultLogger } from '../services/logger.service';
 const colors = require('colors');
 import { YaguraEvent } from './event';
 import { ServerEvent, ServerEventType } from './server.event';
-import { SemVer } from 'semver';
 
 import 'colors';
 import 'clarify';
 
-const yaguraPackage = require('../../package.json');
-
 export class Yagura {
-    public static readonly version: SemVer = new SemVer(yaguraPackage.version);
-
     private _isInit: boolean;
     private _stack: Layer[];
     protected logger: Logger;

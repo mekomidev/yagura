@@ -1,13 +1,10 @@
 import { deepFreeze } from '../utils/objectUtils';
-import { VersionMismatchError, YaguraError } from '../utils/errors';
+import { YaguraError } from '../utils/errors';
 import { YaguraEvent, EventHandler, EventFilter } from './event';
 import { Yagura } from './yagura';
 
-import * as SemVer from 'semver';
-
 export abstract class Layer implements EventHandler {
     public readonly name: string;
-    public readonly yaguraVersion?: SemVer.Range;
 
     public readonly config: any;
 
@@ -16,14 +13,8 @@ export abstract class Layer implements EventHandler {
      *
      * @param {any} config Overlay configuration object. Should be a plain JSON object, any functions will be excluded
      */
-    constructor(name: string, config: any, yaguraVersion?: SemVer.Range) {
+    constructor(name: string, config: any) {
         this.name = name;
-        this.yaguraVersion = yaguraVersion;
-
-        // Compare Yagura versions if necessary
-        if (!!yaguraVersion && !SemVer.satisfies(Yagura.version, yaguraVersion)) {
-            throw new VersionMismatchError(`Overlay ${this.name} requires Yagura@${yaguraVersion.format()}, but got ${Yagura.version.format()}`);
-        }
 
         // Deep copy config (this excludes functions!) and deep freeze it
         // TODO: review whether this is necessary

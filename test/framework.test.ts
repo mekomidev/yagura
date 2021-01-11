@@ -4,7 +4,6 @@ import { ServerEvent, ServerEventType } from '../src/framework/server.event';
 import 'mocha';
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import * as SemVer from 'semver';
 
 describe('Framework', () => {
     it('should instantiate and initialize correctly', async () => {
@@ -37,7 +36,7 @@ describe('Framework', () => {
     describe('Layer management', () => {
         /** Example Layer implementation */
         class DummyLayer extends Layer {
-            constructor(yaguraVersion?: SemVer.Range) {
+            constructor() {
                 super('Dummy', {});
             }
 
@@ -61,18 +60,6 @@ describe('Framework', () => {
             const app = await Yagura.start([layer]);
             expect((layer as any).yagura).to.equal(app);
         });
-        it('should match Yagura version requirement', async () => {
-            const versionRange = new SemVer.Range(`<${Yagura.version.format()}`);
-
-            try {
-                const layer = new DummyLayer(versionRange);
-                const app = await Yagura.start([layer]);
-
-                expect.fail();
-            } catch (err) {
-                expect(err).to.be.instanceOf(Error);
-            }
-        });
         it('should notify Layers on shutdown', async () => {
             const layer = new DummyLayer();
             const app = await Yagura.start([layer]);
@@ -90,7 +77,7 @@ describe('Framework', () => {
     describe('Event handling', () => {
         /** Example Layer implementation */
         class DummyLayer extends Layer {
-            constructor(yaguraVersion?: SemVer.Range) {
+            constructor() {
                 super('Dummy', {});
             }
 
