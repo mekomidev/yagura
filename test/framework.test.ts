@@ -37,7 +37,7 @@ describe('Framework', () => {
         /** Example Layer implementation */
         class DummyLayer extends Layer {
             constructor() {
-                super('Dummy', {});
+                super({});
             }
 
             public async initialize() { /* */ }
@@ -78,7 +78,7 @@ describe('Framework', () => {
         /** Example Layer implementation */
         class DummyLayer extends Layer {
             constructor() {
-                super('Dummy', {});
+                super({});
             }
 
             public async initialize() { /* */ }
