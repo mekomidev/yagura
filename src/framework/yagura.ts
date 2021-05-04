@@ -78,7 +78,7 @@ export class Yagura {
             if (process.env.NODE_ENV !== 'production') {
                 // do nothing, let it loop
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                this.logger.warn(`Re-handled event: ${colors.bold(event.constructor.name)}`); // TODO: implement event IDs (hashes?)
+                this.logger.warn(`Re-handled event: ${colors.bold(event.constructor.name)}#${event.id}`); // TODO: implement event IDs (hashes?)
             } else {
                 // drop the event
                 this.logger.warn('Dropping event');

@@ -1,12 +1,24 @@
 import { Yagura } from "./yagura";
 import { deepFreeze } from "../utils/objectUtils";
 import { HandleGuard } from "../utils/handleGuard";
+import { createHash, randomBytes } from "crypto";
 
 export abstract class YaguraEvent {
-    protected data: any;
+    public readonly id: string;
+    public data: any;
 
-    constructor(data?: any) {
+    /**
+     * @param data data to be held by this Event
+     * @param id unique ID for this Event; if not provided, a random 32-byte hex string is generated
+     */
+    constructor(data: any, id?: string) {
         this.data = data;
+        this.id = id ?? randomBytes(32).toString('hex');
+    }
+
+    /** @returns a SHA256 hash of the @member data member */
+    public getHash(): string {
+        return createHash('sha256').update(this.data.toString()).digest('hex');
     }
 
     public readonly guard: HandleGuard = new HandleGuard();

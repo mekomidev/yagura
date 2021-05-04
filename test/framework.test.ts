@@ -70,7 +70,7 @@ describe('Framework', () => {
             (app as any)._handleShutdown();
 
             expect(fake.lastCall.lastArg).to.be.instanceOf(ServerEvent);
-            expect((fake.lastCall.lastArg as ServerEvent).type).to.equal(ServerEventType.shutdown);
+            expect((fake.lastCall.lastArg as ServerEvent).data).to.equal(ServerEventType.shutdown);
         });
     });
 
