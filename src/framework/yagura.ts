@@ -15,14 +15,14 @@ export class Yagura {
     private _stack: Layer[];
     protected logger: Logger;
 
-    public static async start(overlays: Layer[]): Promise<Yagura> {
-        const app: Yagura = new Yagura(overlays);
+    public static async start(layers: Layer[]): Promise<Yagura> {
+        const app: Yagura = new Yagura(layers);
         await app.initialize();
 
         return app;
     }
 
-    private constructor(overlays: Layer[]) {
+    private constructor(layers: Layer[]) {
         // Mount handlers
         if (process.env.NODE_ENV !== 'test') {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -41,7 +41,7 @@ export class Yagura {
             });
         }
 
-        this._stack = overlays;
+        this._stack = layers;
     }
 
     public async initialize() {
@@ -51,7 +51,7 @@ export class Yagura {
                 o.mount(this);
                 await o.initialize();
             } catch (err) {
-                this.logger.error(`Failed to initialize overlay: ${o.toString()}`);
+                this.logger.error(`Failed to initialize layer: ${o.toString()}`);
                 await this.handleError(err);
                 break;
             }

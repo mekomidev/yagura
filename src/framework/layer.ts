@@ -27,7 +27,7 @@ export abstract class Layer implements EventHandler {
         if (!this.yagura) {
             this.yagura = instance;
         } else {
-            throw new YaguraError('This overlay has already been mounted');
+            throw new YaguraError('This layer has already been mounted');
         }
     }
 
