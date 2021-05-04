@@ -24,9 +24,9 @@ export class DefaultLogger extends Logger {
         super('Default');
     }
 
-    public error(err: string | Error): void { console.error(err.toString().red); }
-    public warn(text: string): void { console.log(text.yellow); }
-    public info(text: string): void { console.log(text.white); }
-    public debug(text: string): void { console.log(text.blue); }
-    public verbose(text: string): void { console.log(text.cyan); }
+    public error(err: string | Error): void { console.error(`[ERROR] ${err.toString()}`.red); }
+    public warn(text: string): void { console.log(`[WARN] ${text}`.yellow); }
+    public info(text: string): void { console.log(`[INFO] ${text}`.white); }
+    public debug(text: string): void { console.log(`[DEBUG] ${text}`.blue); }
+    public verbose(text: string): void { console.log(`[VERBOSE] ${text}`.cyan); }
 }
