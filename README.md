@@ -2,6 +2,8 @@
 
   A solid, event-based layered web framework - written in TypeScript for [Node.js](http://nodejs.org)
 
+  This package is currently **HIGHLY EXPERIMENTAL** and undergoing development! [Follow us on Twitter](https://twitter.com/mekomidev) for release announcements!
+
 
 [![npm (scoped)](https://img.shields.io/npm/v/@yagura/yagura)](https://npmjs.com/@yagura/yagura)
 ![Travis (.com)](https://img.shields.io/travis/com/mekomidev/yagura)
