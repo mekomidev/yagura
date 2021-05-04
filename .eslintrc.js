@@ -14,7 +14,7 @@ Happy linting! 💖
 module.exports = {
     "env": {
         "browser": false,
-        "es6": true,
+        "es2017": true,
         "node": true
     },
     "ignorePatterns": [".eslintrc.js"],
@@ -26,7 +26,7 @@ module.exports = {
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "project": "tsconfig.json",
+        "project": "tsconfig.eslint.json",
         "sourceType": "module"
     },
     "plugins": [
