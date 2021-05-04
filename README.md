@@ -12,8 +12,8 @@
 
   * Promise-based asynchronous API in TypeScript
   * Modular and stackable **event-based** structure
-    * Stack your `Overlay`s
-    * Process an event as it trickles down through each `Overlay` sequentially
+    * Stack your `Layer`s
+    * Process an event as it trickles down through each `Layer` sequentially
     * Process events in parallel by using a `ParallelScaffold`
   * Dependency management
     * Implement `Service`s and inject dependencies through the `ServiceContainer`
@@ -26,7 +26,7 @@
 
 In a reality where the nature of software development is becoming increasingly more iterative, it's becoming harder and harder to foresee how much complexity the project will require, which in turn leads to either under- or over-engineering.
 
-**Solution:** build your application as a modular event-handling tower, where, as events trickle from the top, each Overlay can provide:
+**Solution:** build your application as a modular event-handling tower, where, as events trickle from the top, each Layer can provide:
  - Data processing
  - Routing
  - Middleware
@@ -35,7 +35,7 @@ In a reality where the nature of software development is becoming increasingly m
 
 ...and more! By laying out your code in a clear, *sequential event processing scaffold*, you can freely* and easily add/remove entire parts of an application while maintaining integrity
 
-(<sub><sup>*as long as you've decoupled it properly; we're not responsible for developers writing an entire real-time "BigData" processing service with an HTTP API as a single Overlay. Always follow good programming practices!</sup></sub>)
+(<sub><sup>*as long as you've decoupled it properly; we're not responsible for developers writing an entire real-time "BigData" processing service with an HTTP API as a single Layer. Always follow good programming practices!</sup></sub>)
 
 ## Docs & Community
 
@@ -58,7 +58,7 @@ $ npm install @yagura/yagura
 Check out **Yagura's extension packages** to develop specific types of applications:
 
  - [`@yagura/http`](https://github.com/mekomidev/yagura-http) HTTP server and API development tools (supports `HTTP/2`!)
- - [`@yagura/realtime`](https://github.com/mekomidev/yagura-realtime) base Overlays for realtime-based server development (such as *MQTT*, *WebSockets*, *raw sockets (TCP/UDP)*, etc.)
+ - [`@yagura/realtime`](https://github.com/mekomidev/yagura-realtime) base Layers for realtime-based server development (such as *MQTT*, *WebSockets*, *raw sockets (TCP/UDP)*, etc.)
  <!-- - [`@yagura/mqtt`](https://github.com/mekomidev/yagura-mqtt) MQTT broker and event router -->
   <!-- - [`@yagura/parallel`](https://github.com/mekomidev/yagura-parallel) set of tools for distributed event processing; to be used with the [`seirou`](https://github.com/mekomidev/seirou) event dispatch server -->
 

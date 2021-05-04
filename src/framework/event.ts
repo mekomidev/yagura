@@ -27,9 +27,9 @@ export type EventFilter = (event: YaguraEvent) => boolean;
  * Given an array of YaguraEvent subclasses or a EventFilter function,
  * allows the decorated method to handle only the allowed events.
  *
- * Use this in your Overlay to reduce event processing overhead.
+ * Use this in your Layer to reduce event processing overhead.
  *
- * Example: "@eventFilter(HttpRequestEvent)" on handleEvent() of a HttpRouterOverlay
+ * Example: "@eventFilter(HttpRequestEvent)" on handleEvent() of a HttpRouterLayer
  *
  * @param {(typeof YaguraEvent)[] | EventFilter} filter
  */

@@ -9,9 +9,9 @@ export abstract class Layer implements EventHandler {
     public readonly config: any;
 
     /**
-     * Initializes the Overlay
+     * Initializes the Layer
      *
-     * @param {any} config Overlay configuration object. Should be a plain JSON object, any functions will be excluded
+     * @param {any} config Layer configuration object. Should be a plain JSON object, any functions will be excluded
      */
     constructor(name: string, config: any) {
         this.name = name;
