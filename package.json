@@ -1,13 +1,14 @@
 {
     "name": "@yagura/yagura",
-    "version": "0.0.3-rc.4",
+    "version": "0.0.3-rc.5",
     "description": "A solid, event-based layered web framework - written in TypeScript for Node.js",
     "main": "lib/js/index.js",
     "types": "lib/declarations/index.d.ts",
     "scripts": {
         "clean": "rm -rf ./lib",
         "build": "./node_modules/typescript/bin/tsc",
-        "test": "NODE_ENV=test ./node_modules/.bin/mocha -r ts-node/register ./test/**/*.test.ts"
+        "test": "NODE_ENV=test ./node_modules/.bin/mocha -r ts-node/register ./test/**/*.test.ts",
+        "release": "npm run test && npm run clean && npm run build && npm publish"
     },
     "files": [
         "LICENSE",
