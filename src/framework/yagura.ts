@@ -1,49 +1,54 @@
-import { Overlay } from './overlay';
-import { Module } from './module';
+import { Layer } from './layer';
+import { Service } from './service';
 import { YaguraError, StubError } from '../utils/errors';
-import { Logger, DefaultLogger } from '../modules/logger.module';
-
-import _colors = require('colors');
-import { YaguraEvent } from './event';
-import { HandleGuard } from '../utils/handleGuard';
-import { ServerEvent, ServerEventType } from './server.event';
-import { SemVer } from 'semver';
+import { Logger, DefaultLogger } from '../services/logger.service';
 
 const colors = require('colors');
+import { YaguraEvent } from './event';
+import { ServerEvent, ServerEventType } from './server.event';
+
+import 'colors';
+import 'clarify';
 
 export class Yagura {
-    public static readonly version: SemVer = new SemVer('0.0.1');
+    private _isInit: boolean;
+    private _stack: Layer[];
+    protected logger: Logger;
 
-    private static _stack: Overlay[];
-    protected static logger: Logger;
+    public static async start(overlays: Layer[]): Promise<Yagura> {
+        const app: Yagura = new Yagura(overlays);
+        await app.initialize();
 
-    public static async start(overlays: Overlay[]) {
-        if (Yagura._stack) {
-            throw new YaguraError(`Yagura has already been initialized, you cannot call start() more than once`);
+        return app;
+    }
+
+    private constructor(overlays: Layer[]) {
+        // Mount handlers
+        if (process.env.NODE_ENV !== 'test') {
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            process.on('beforeExit', async () => {
+                await this._handleShutdown();
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            process.on('unhandledRejection', async (err: Error) => {
+                await this.handleError(err);
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            process.on('uncaughtException', async (err: Error) => {
+                await this.handleError(err);
+            });
         }
 
-        // Mount handlers
-        process.on('beforeExit', async () => {
-            await this._handleShutdown();
-        });
-
-        process.on('unhandledRejection', async (err: Error) => {
-            await this.handleError(err);
-        });
-
-        process.on('uncaughtException', async (err: Error) => {
-            await this.handleError(err);
-        });
-
-        // Initialize base modules
-        Yagura.logger = Yagura.registerModule(new DefaultLogger());
-
-        // Initialize Overlay
         this._stack = overlays;
+    }
 
+    public async initialize() {
         // TODO: consider cache impact given by reverting the array
         for (const o of this._stack.reverse()) {
             try {
+                o.mount(this);
                 await o.initialize();
             } catch (err) {
                 this.logger.error(`Failed to initialize overlay: ${o.toString()}`);
@@ -51,19 +56,29 @@ export class Yagura {
                 break;
             }
         }
+
+        this._isInit = true;
+
+        // Initialize base modules
+        this.logger = this.registerService(new DefaultLogger());
     }
 
     /*
      *  Event subsystem
      */
-    public static async dispatch(event: YaguraEvent): Promise<void> {
+    public async dispatch(event: YaguraEvent): Promise<void> {
+        if (!this._isInit) {
+            throw new Error('dispatch method called before initialize');
+        }
+
         // Check if event was handled already
         if (event.guard.wasHandled()) {
             this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
 
             if (process.env.NODE_ENV !== 'production') {
                 // do nothing, let it loop
-                this.logger.warn(`Re-handled event:\n${event.toString()}`);
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                this.logger.warn(`Re-handled event: ${colors.bold(event.constructor.name)}`); // TODO: implement event IDs (hashes?)
             } else {
                 // drop the event
                 this.logger.warn('Dropping event');
@@ -92,21 +107,25 @@ export class Yagura {
     }
 
     /*
-     *  Modules subsystem
+     *  Services subsystem
      */
-    private static _modules: { [name: string]: ModuleHolder<any> } = {};
+    private _services: { [name: string]: ServiceHolder<any> } = {};
     // {
     //     "name": {
-    //         active: Module,
+    //         active: Service,
     //         vendors: {
-    //             "default": Module,
-    //             "vendor1": Module
+    //             "default": Service,
+    //             "vendor1": Service
     //         }
     //     }
     // }
 
-    public static getModule<M extends Module>(name: string, vendor?: string): M {
-        const m: ModuleHolder<M> = this._modules[name];
+    public getService<M extends Service>(name: string, vendor?: string): M {
+        if (!this._isInit) {
+            throw new Error('getService method called before initialize');
+        }
+
+        const m: ServiceHolder<M> = this._services[name];
 
         if (!m) {
             return null;
@@ -124,18 +143,26 @@ export class Yagura {
     }
 
     /**
-     * Returns a Module proxy object, which will always store the reference to the active instance of the requested Module
+     * Returns a Service proxy object, which will always store the reference to the active instance of the requested Service
      *
-     * @param name name of the Module to be adapted
-     * @returns {Module} a Module proxy for the requested Module
+     * @param name name of the Service to be adapted
+     * @returns {Service} a Service proxy for the requested Service
      */
-    public static getModuleProxy<M extends Module>(name: string): M {
+    public getServiceProxy<M extends Service>(name: string): M {
+        if (!this._isInit) {
+            throw new Error('getServiceProxy method called before initialize');
+        }
+
         throw new StubError();
         return null;
     }
 
-    public static registerModule<M extends Module>(mod: M): M {
-        let m: ModuleHolder<M> = this._modules[mod.name];
+    public registerService<M extends Service>(mod: M): M {
+        if (!this._isInit) {
+            throw new Error('registerService method called before initialize');
+        }
+
+        let m: ServiceHolder<M> = this._services[mod.name];
 
         if (!m) {
             m = {
@@ -147,10 +174,10 @@ export class Yagura {
 
             m.vendors[mod.vendor] = mod;
 
-            this._modules[mod.name] = m;
+            this._services[mod.name] = m;
         } else {
             if (m.vendors[mod.vendor]) {
-                // throw new YaguraError(`Module '${mod.name}' has already been registered for vendor '${mod.vendor}'`);
+                // throw new YaguraError(`Service '${mod.name}' has already been registered for vendor '${mod.vendor}'`);
             } else {
                 m.active = mod;
                 m.vendors[mod.vendor] = mod;
@@ -158,10 +185,14 @@ export class Yagura {
         }
 
         // TODO: evaluate whether the proxy should be returned
-        return mod; // this.getModuleProxy(mod.name);
+        return mod; // this.getServiceProxy(mod.name);
     }
 
-    public static async handleError(e: Error | YaguraError) {
+    public async handleError(e: Error | YaguraError) {
+        if (!this._isInit) {
+            throw new Error('handleError method called before initialize');
+        }
+
         // Everything's wrapped in a try-catch to avoid infinite loops
         try {
             // Wrap the error in YaguraError if it isn't already
@@ -182,17 +213,21 @@ export class Yagura {
 
             this.logger.error(err);
         } catch (err) {
-            console.error(`FAILED TO HANDLE ERROR\n${err.stack}`);
+            console.error(`FAILED TO HANDLE ERROR\n${(err as Error).stack.toString()}`);
         }
     }
 
-    private static async _handleShutdown() {
+    private async _handleShutdown() {
+        if (!this._isInit) {
+            throw new Error('_handleShutdown method called before initialize');
+        }
+
         this.logger.info('Shutting down...');
-        await Yagura.dispatch(new ServerEvent(ServerEventType.shutdown));
+        await this.dispatch(new ServerEvent(ServerEventType.shutdown));
     }
 }
 
-interface ModuleHolder<M extends Module> {
+interface ServiceHolder<M extends Service> {
     active: M;
     vendors: { [name: string]: M };
 }

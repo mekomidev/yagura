@@ -1,19 +1,25 @@
 // Framework APIs
 import { Yagura } from './framework/yagura';
-import { Overlay } from './framework/overlay';
-import { Module } from './framework/module';
+import { Layer } from './framework/layer';
+import { Service } from './framework/service';
+import { YaguraEvent, eventFilter } from './framework/event';
 
-import { YaguraError, VersionMismatchError } from './utils/errors';
+import { YaguraError } from './utils/errors';
 import { TimeoutError, promiseTimeout } from './utils/promise.utils';
 import { HandleGuard } from './utils/handleGuard';
+
+import { Logger, DefaultLogger } from './services/logger.service';
 
 export {
     // Framework
     Yagura,
-    Overlay,
-    Module,
+    Layer,
+    Service,
+    YaguraEvent,
     // Errors
-    YaguraError, VersionMismatchError, TimeoutError,
+    YaguraError, TimeoutError,
+    // Services
+    Logger, DefaultLogger,
     // Utils
-    promiseTimeout, HandleGuard
+    eventFilter, promiseTimeout, HandleGuard
 };

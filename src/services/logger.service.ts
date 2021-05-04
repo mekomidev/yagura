@@ -1,7 +1,7 @@
-import { Module } from '../framework/module';
-import _colors = require('colors');
+import { Service } from '../framework/service';
+require('colors');
 
-export abstract class Logger extends Module {
+export abstract class Logger extends Service {
     constructor(vendor: string) {
         super('Logger', vendor);
     }
@@ -15,7 +15,7 @@ export abstract class Logger extends Module {
 }
 
 /**
- * Default implementation of the Logger module;
+ * Default implementation of the Logger service;
  * Doesn't rely on any external dependencies, except for 'colors.ts' to colorize the text according to the error level
  * Uses stdout/stderr to output logs
  */
@@ -24,9 +24,9 @@ export class DefaultLogger extends Logger {
         super('Default');
     }
 
-    public error(err: string | Error): void { console.error(err.toString().red); }
-    public warn(text: string): void { console.log(text.yellow); }
-    public info(text: string): void { console.log(text.white); }
-    public debug(text: string): void { console.log(text.blue); }
-    public verbose(text: string): void { console.log(text.cyan); }
+    public error(err: string | Error): void { console.error(`[ERROR] ${err.toString()}`.red); }
+    public warn(text: string): void { console.log(`[WARN] ${text}`.yellow); }
+    public info(text: string): void { console.log(`[INFO] ${text}`.white); }
+    public debug(text: string): void { console.log(`[DEBUG] ${text}`.blue); }
+    public verbose(text: string): void { console.log(`[VERBOSE] ${text}`.cyan); }
 }
