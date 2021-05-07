@@ -16,6 +16,8 @@ describe('Framework', () => {
             constructor() {
                 super('Dummy', 'test');
             }
+
+            public async initialize() { /* */ }
         }
 
         let app: Yagura;

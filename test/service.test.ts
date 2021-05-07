@@ -9,6 +9,8 @@ describe('Services', () => {
             super('Dummy', 'test');
         }
 
+        public async initialize() { /* */ }
+
         public hello(): string {
             return 'world';
         }
