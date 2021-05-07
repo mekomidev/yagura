@@ -5,7 +5,7 @@ export const promiseTimeout = async function(ms: number, promise: Promise<any>, 
         const id = setTimeout(() => {
             clearTimeout(id);
             reject(new TimeoutError(`Promise timed out in ${ms}ms`));
-        });
+        }, ms);
     });
 
     const result = await Promise.race([promise, timeout]);
