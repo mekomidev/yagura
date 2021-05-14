@@ -8,6 +8,7 @@ import { ServerEvent, ServerEventType } from './server.event';
 
 require('clarify');
 import * as colors from 'colors/safe';
+import { ErrorHandler } from '../services/errorHandler.service';
 
 export class Yagura {
     private _isInit: boolean;
@@ -257,7 +258,7 @@ export class Yagura {
                 err.guard.flagHandled();
             }
 
-            this.logger.error(err);
+            await this.getService<ErrorHandler>('ErrorHandler').handle(e);
         } catch (err) {
             console.error(`FAILED TO HANDLE ERROR\n${(err as Error).stack.toString()}`);
         }
