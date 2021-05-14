@@ -166,10 +166,6 @@ export class Yagura {
      * @returns {Service} a Service proxy for the requested Service
      */
     public getServiceProxy<M extends Service>(name: string, vendor?: string): M {
-        if (!this._isInit) {
-            throw new Error('getServiceProxy method called before start');
-        }
-
         const app: Yagura = this;
         const proxy: M = new Proxy<M>(app.getService(name, vendor), {
             get: (o, key) => {
