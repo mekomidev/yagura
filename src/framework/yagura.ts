@@ -27,6 +27,8 @@ export class Yagura {
         await app._initializeStack();
 
         app._isInit = true;
+        await app.dispatch(new ServerEvent(ServerEventType.start));
+
         return app;
     }
 
