@@ -5,11 +5,9 @@ export enum ServerEventType {
 }
 
 export class ServerEvent extends YaguraEvent {
-    public readonly type: ServerEventType;
+    public data: ServerEventType;
 
     constructor(type: ServerEventType) {
-        super();
-
-        this.type = type;
+        super(type);
     }
 }

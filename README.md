@@ -26,9 +26,9 @@
 
 > Yagura (櫓, 矢倉) is the Japanese word for "tower" or "scaffold"
 
-In a reality where the nature of software development is becoming increasingly more iterative, it's becoming harder and harder to foresee how much complexity the project will require, which in turn leads to either under- or over-engineering.
+As software development keeps becoming more iterative, it's becoming harder and harder to foresee how much complexity the project will increase, which in turn leads to either under- or over-engineering.
 
-**Solution:** build your application as a modular event-handling tower, where, as events trickle from the top, each Layer can provide:
+**Solution:** build your application as a modular event-handling pipeline, where, as events trickle down, each Layer can provide:
  - Data processing
  - Routing
  - Middleware
@@ -39,11 +39,50 @@ In a reality where the nature of software development is becoming increasingly m
 
 (<sub><sup>*as long as you've decoupled it properly; we're not responsible for developers writing an entire real-time "BigData" processing service with an HTTP API as a single Layer. Always follow good programming practices!</sup></sub>)
 
+## Example
+```typescript
+import { Yagura } from '@yagura/yagura'
+import ... from '...' // roll out your own layers and services!
+
+const app: Yagura = await Yagura.start(
+  // Layers
+  // quickly remove, reorder and replace each of the lines to reconfigure your pipeline with ease!
+  [
+      new MiddlewareLayer(),              // Generic HTTP middleware (ie. parse headers, request logging, handing multi-part...)
+      new AuthenticationLayer({           // Authentication middleware (ie. verify whether user is authenticated, provide login routes...)
+          requireLogin: true
+      }),
+      new ValidationLayer(),              // Request validation middleware (ie. verify request format, check required parameters...)
+      new ResourceLayer(),                // HTTP resource layer (ie. perform queries, fetch data, elaborate response...)
+      new ParsingLayer(),                 // Response parsing (ie. ensure object serialization, strip secret data, encode text according to locale...)
+  ],
+  // Services
+  [
+      new CoolLogger({                // Custom logger
+          minLevel: 'debug'
+      }),
+      new CrashNotifier({             // Crash notification utility
+          email: 'admin@example.com'
+      }),
+      new DatabaseConnection({        // Database access
+          host: 'db.secretserver.com',
+          username: 'root',
+          password: 'S0meTh1ngStr0nG!',
+          db: 'cool-data'
+      }),
+      new WebServer({                 // Simple HTTP web server
+          port: 3000,
+          https: true
+      })
+  ]
+);
+```
+
 ## Docs & Community
 
-<!--   * [Website and Documentation](http://dev.mekomidev.com/yagura) (*coming soon!*)
+<!--   * [Website and Documentation](http://dev.mekomi.dev/yagura) (*coming soon!*)
   * [Wiki](https://github.com/mekomidev/yagura/wiki) (*coming soon!*)
-  * [Online community forum](https://dev.mekomidev.com/forum/category/10/yagura) for support and discussion (*coming soon!*) -->
+  * [Online community forum](https://developers.mekomi.dev/forum/category/10/yagura) for support and discussion (*coming soon!*) -->
 
 ### Security issues
 

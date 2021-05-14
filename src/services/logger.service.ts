@@ -1,5 +1,5 @@
 import { Service } from '../framework/service';
-require('colors');
+import 'colors';
 
 export abstract class Logger extends Service {
     constructor(vendor: string) {
@@ -23,6 +23,8 @@ export class DefaultLogger extends Logger {
     constructor() {
         super('Default');
     }
+
+    public async initialize() { /* */ }
 
     public error(err: string | Error): void { console.error(`[ERROR] ${err.toString()}`.red); }
     public warn(text: string): void { console.log(`[WARN] ${text}`.yellow); }

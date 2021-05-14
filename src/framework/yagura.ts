@@ -1,28 +1,35 @@
 import { Layer } from './layer';
 import { Service } from './service';
-import { YaguraError, StubError } from '../utils/errors';
+import { YaguraError } from '../utils/errors';
 import { Logger, DefaultLogger } from '../services/logger.service';
 
-const colors = require('colors');
 import { YaguraEvent } from './event';
 import { ServerEvent, ServerEventType } from './server.event';
 
-import 'colors';
-import 'clarify';
+require('clarify');
+import * as colors from 'colors/safe';
+import { ErrorHandler } from '../services/errorHandler.service';
 
 export class Yagura {
     private _isInit: boolean;
     private _stack: Layer[];
     protected logger: Logger;
 
-    public static async start(overlays: Layer[]): Promise<Yagura> {
-        const app: Yagura = new Yagura(overlays);
-        await app.initialize();
+    public static async start(layers: Layer[], services?: Service[]): Promise<Yagura> {
+        const app: Yagura = new Yagura(layers);
 
+        // Initialize services
+        app.logger = await app.registerService(new DefaultLogger());
+        await app._initializeServices(services ?? []);
+
+        // Initialize layers
+        await app._initializeStack();
+
+        app._isInit = true;
         return app;
     }
 
-    private constructor(overlays: Layer[]) {
+    private constructor(layers: Layer[]) {
         // Mount handlers
         if (process.env.NODE_ENV !== 'test') {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -41,26 +48,21 @@ export class Yagura {
             });
         }
 
-        this._stack = overlays;
+        this._stack = layers;
     }
 
-    public async initialize() {
+    private async _initializeStack() {
         // TODO: consider cache impact given by reverting the array
         for (const o of this._stack.reverse()) {
             try {
                 o.mount(this);
                 await o.initialize();
             } catch (err) {
-                this.logger.error(`Failed to initialize overlay: ${o.toString()}`);
+                this.logger.error(`Failed to initialize layer: ${o.toString()}`);
                 await this.handleError(err);
                 break;
             }
         }
-
-        this._isInit = true;
-
-        // Initialize base modules
-        this.logger = this.registerService(new DefaultLogger());
     }
 
     /*
@@ -78,7 +80,7 @@ export class Yagura {
             if (process.env.NODE_ENV !== 'production') {
                 // do nothing, let it loop
                 // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                this.logger.warn(`Re-handled event: ${colors.bold(event.constructor.name)}`); // TODO: implement event IDs (hashes?)
+                this.logger.warn(`Re-handled event: ${colors.bold(event.constructor.name)}#${event.id}`);
             } else {
                 // drop the event
                 this.logger.warn('Dropping event');
@@ -88,15 +90,15 @@ export class Yagura {
             event.guard.flagHandled();
         }
 
-        for (const o of this._stack) {
+        for (const layer of this._stack) {
             try {
-                event = await o.handleEvent(event);
+                event = await layer.handleEvent(event);
                 if (!event) {
                     break;
                 }
             } catch (e) {
                 try {
-                    await o.handleError(e);
+                    await layer.handleError(e);
                 } catch (e2) {
                     await this.handleError(e2);
                 }
@@ -120,9 +122,19 @@ export class Yagura {
     //     }
     // }
 
+    private async _initializeServices(services: Service[]) {
+        for(const s of services) {
+            try {
+                await this.registerService(s);
+            } catch(err) {
+                this.logger.error(new Error(`Failed to initialize service '${s.constructor.name}\n${(err as Error).stack.toString()}'`));
+            }
+        }
+    }
+
     public getService<M extends Service>(name: string, vendor?: string): M {
         if (!this._isInit) {
-            throw new Error('getService method called before initialize');
+            throw new Error('getService method called before start');
         }
 
         const m: ServiceHolder<M> = this._services[name];
@@ -131,7 +143,7 @@ export class Yagura {
             return null;
         } else {
             if (vendor) {
-                if (!m.vendors[vendor]) {
+                if (m.vendors[vendor]) {
                     return m.vendors[vendor];
                 } else {
                     return null;
@@ -148,19 +160,51 @@ export class Yagura {
      * @param name name of the Service to be adapted
      * @returns {Service} a Service proxy for the requested Service
      */
-    public getServiceProxy<M extends Service>(name: string): M {
+    public getServiceProxy<M extends Service>(name: string, vendor?: string): M {
         if (!this._isInit) {
-            throw new Error('getServiceProxy method called before initialize');
+            throw new Error('getServiceProxy method called before start');
         }
 
-        throw new StubError();
-        return null;
+        const app: Yagura = this;
+        const proxy: M = new Proxy<M>(app.getService(name, vendor), {
+            get: (o, key) => {
+                return app.getService(name, vendor)[key];
+            },
+            set: (o, key, value) => {
+                const service: M = app.getService(name, vendor);
+                if(Object(service).hasOwnProperty(key)) {
+                    service[key] = value;
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            apply: (o, key) => {
+                return app.getService(name, vendor)[key]();
+            },
+            getPrototypeOf: () => {
+                return Object.getPrototypeOf(app.getService(name, vendor));
+            },
+            setPrototypeOf: (o, v) => {
+                return Object.setPrototypeOf(app.getService(name, vendor), v);
+            },
+            isExtensible: () => {
+                return Object.isExtensible(app.getService(name, vendor));
+            },
+            preventExtensions: () => {
+                Object.preventExtensions(app.getService(name, vendor));
+                return true;
+            }
+        });
+
+        return proxy;
     }
 
-    public registerService<M extends Service>(mod: M): M {
-        if (!this._isInit) {
-            throw new Error('registerService method called before initialize');
-        }
+    public async registerService<M extends Service>(mod: M): Promise<M> {
+        // TODO: evaluate whether necessary
+        // if (!this._isInit) {
+        //     throw new Error('registerService method called before start');
+        // }
 
         let m: ServiceHolder<M> = this._services[mod.name];
 
@@ -184,13 +228,16 @@ export class Yagura {
             }
         }
 
+        mod.mount(this);
+        await mod.initialize();
+
         // TODO: evaluate whether the proxy should be returned
         return mod; // this.getServiceProxy(mod.name);
     }
 
     public async handleError(e: Error | YaguraError) {
         if (!this._isInit) {
-            throw new Error('handleError method called before initialize');
+            throw new Error('handleError method called before start');
         }
 
         // Everything's wrapped in a try-catch to avoid infinite loops
@@ -211,17 +258,13 @@ export class Yagura {
                 err.guard.flagHandled();
             }
 
-            this.logger.error(err);
+            await this.getService<ErrorHandler>('ErrorHandler').handle(e);
         } catch (err) {
             console.error(`FAILED TO HANDLE ERROR\n${(err as Error).stack.toString()}`);
         }
     }
 
     private async _handleShutdown() {
-        if (!this._isInit) {
-            throw new Error('_handleShutdown method called before initialize');
-        }
-
         this.logger.info('Shutting down...');
         await this.dispatch(new ServerEvent(ServerEventType.shutdown));
     }

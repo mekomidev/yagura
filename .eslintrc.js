@@ -14,20 +14,18 @@ Happy linting! 💖
 module.exports = {
     "env": {
         "browser": false,
-        "es6": true,
+        "es2017": true,
         "node": true
     },
     "ignorePatterns": [".eslintrc.js"],
     "extends": [
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
-        "prettier",
-        "prettier/@typescript-eslint"
+        "prettier"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-        "project": "tsconfig.json",
-        "sourceType": "module"
+        "project": "tsconfig.eslint.json"
     },
     "plugins": [
         "eslint-plugin-import",
@@ -81,6 +79,7 @@ module.exports = {
         "@typescript-eslint/no-namespace": "warn",
         "@typescript-eslint/no-parameter-properties": "off",
         "@typescript-eslint/no-this-alias": "off",
+        "@typescript-eslint/no-unnecessary-type-assertion": "warn",
         "@typescript-eslint/no-unused-expressions": "warn",
         "@typescript-eslint/no-use-before-define": "off",
         "@typescript-eslint/no-var-requires": "off",
@@ -88,6 +87,7 @@ module.exports = {
         "@typescript-eslint/no-unsafe-call": "off",
         "@typescript-eslint/no-unsafe-member-access": "off",
         "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-shadow": "error",
         "@typescript-eslint/prefer-for-of": "warn",
         "@typescript-eslint/prefer-function-type": "warn",
         "@typescript-eslint/prefer-namespace-keyword": "warn",
@@ -129,12 +129,7 @@ module.exports = {
         "no-fallthrough": "off",
         "no-invalid-this": "off",
         "no-new-wrappers": "warn",
-        "no-shadow": [
-            "warn",
-            {
-                "hoist": "all"
-            }
-        ],
+        "no-shadow": "off",
         "no-throw-literal": "warn",
         "no-trailing-spaces": "warn",
         "no-undef-init": "warn",

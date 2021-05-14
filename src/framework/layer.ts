@@ -1,6 +1,6 @@
 import { deepFreeze } from '../utils/objectUtils';
 import { YaguraError } from '../utils/errors';
-import { YaguraEvent, EventHandler, EventFilter } from './event';
+import { YaguraEvent, EventHandler } from './event';
 import { Yagura } from './yagura';
 
 export abstract class Layer implements EventHandler {
@@ -13,9 +13,7 @@ export abstract class Layer implements EventHandler {
      *
      * @param {any} config Layer configuration object. Should be a plain JSON object, any functions will be excluded
      */
-    constructor(name: string, config: any) {
-        this.name = name;
-
+    constructor(config?: any) {
         // Deep copy config (this excludes functions!) and deep freeze it
         // TODO: review whether this is necessary
         this.config = deepFreeze(JSON.parse(JSON.stringify(config)));
@@ -27,7 +25,7 @@ export abstract class Layer implements EventHandler {
         if (!this.yagura) {
             this.yagura = instance;
         } else {
-            throw new YaguraError('This overlay has already been mounted');
+            throw new YaguraError('This layer has already been mounted');
         }
     }
 
