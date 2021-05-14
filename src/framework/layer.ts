@@ -1,6 +1,6 @@
 import { deepFreeze } from '../utils/objectUtils';
 import { YaguraError } from '../utils/errors';
-import { YaguraEvent, EventHandler, EventFilter } from './event';
+import { YaguraEvent, EventHandler } from './event';
 import { Yagura } from './yagura';
 
 export abstract class Layer implements EventHandler {

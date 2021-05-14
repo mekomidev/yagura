@@ -1,4 +1,4 @@
-import { Yagura, Layer, Service, YaguraEvent } from '../src';
+import { Yagura, Layer, Service, YaguraEvent, YaguraError } from '../src';
 import { ServerEvent, ServerEventType } from '../src/framework/server.event';
 
 import 'mocha';
@@ -13,23 +13,100 @@ describe('Framework', () => {
 
     describe('Service handling', () => {
         class DummyService extends Service {
-            constructor() {
-                super('Dummy', 'test');
+            constructor(vendor: string = 'test') {
+                super('Dummy', vendor);
             }
+
+            public async initialize() { /* */ }
+
+            public text: string = 'world';
+            public hello(): string {
+                return this.text;
+            }
+        }
+
+        class BetterDummyService extends DummyService {
+            constructor() {
+                super('cool');
+            }
+
+            public async initialize() { /* */ }
+
+            public text: string = "cool world";
         }
 
         let app: Yagura;
 
-        it('should register a service', async () => {
+        it('should register, mount and initialize a service', async () => {
             app = await Yagura.start([]);
             const service: Service = new DummyService();
-            app.registerService(service);
+
+            // check if initialized
+            const fake = sinon.fake.resolves(null);
+            sinon.replace(service, 'initialize', fake);
+
+            await app.registerService(service);
+
+            expect(fake.called, "Service not initialized").to.be.eq(true);
+
+            // check if mounted
+            expect((service as any).yagura, "Service not mounted").to.be.eq(app);
+
+            // check if registered
+            expect(app.getService('Dummy'), "Service not registered").to.be.eq(service);
         });
 
-        it('should retrieve a registered service', async () => {
+        it('should not mount twice', () => {
+            const service: Service = app.getService('Dummy');
+
+            try {
+                service.mount(app);
+                expect.fail();
+            } catch (e) {
+                expect(e).to.be.instanceOf(YaguraError);
+            }
+        })
+
+        it('should retrieve a registered service', () => {
             const service: Service = app.getService('Dummy');
 
             expect(service).to.be.instanceOf(DummyService);
+        });
+
+        it('should retrieve a registered service by vendor', () => {
+            const service: Service = app.getService('Dummy', 'test');
+
+            expect(service).to.be.instanceOf(DummyService);
+        });
+
+        it('should update the active service when registering a new vendor', async () => {
+            const service: Service = new BetterDummyService();
+            await app.registerService(service);
+
+            expect(app.getService('Dummy'), "New service not active").to.be.eq(service);
+            expect(app.getService('Dummy', 'cool'), "New service not available by vendor").to.be.eq(service);
+            expect(app.getService('Dummy', 'test'), "Old service has been deregistered").to.be.instanceOf(DummyService);
+        });
+
+        it('should return a valid service proxy', async () => {
+            app = await Yagura.start([]);
+
+            await app.registerService(new DummyService());
+            const proxy: DummyService = app.getServiceProxy('Dummy');
+
+            // check basic access
+            expect(proxy, "Isn't a vaild instance of service").to.be.instanceOf(DummyService);
+            expect(proxy.text, "Doesn't allow read access to its property").to.be.eq('world');
+
+            proxy.text = 'za warudo';
+            expect(proxy.text, "Doesn't allow write access to its property").to.be.eq('za warudo');
+
+            expect(proxy.hello(), "Doesn't allow read access to its method").to.be.eq('za warudo');
+
+            // check if replacement works
+            await app.registerService(new BetterDummyService());
+            expect(proxy, "Isn't a vaild instance of new service").to.be.instanceOf(BetterDummyService);
+            expect(proxy.text, "Doesn't allow read access to its property").to.be.eq('cool world');
         });
     });
 
@@ -71,6 +148,26 @@ describe('Framework', () => {
 
             expect(fake.lastCall.lastArg).to.be.instanceOf(ServerEvent);
             expect((fake.lastCall.lastArg as ServerEvent).data).to.equal(ServerEventType.shutdown);
+        });
+    });
+
+    describe('Initialization', () => {
+        it('should initialize services at start', async () => {
+            class DummyService extends Service {
+                constructor() {
+                    super('Dummy', 'test');
+                }
+
+                public async initialize() { /* */ }
+            }
+
+            const service = new DummyService();
+            const fake = sinon.fake.resolves(null);
+            sinon.replace(service, 'initialize', fake);
+
+            await Yagura.start([], [service]);
+
+            expect(fake.called, "Service not initialized").to.be.eq(true);
         });
     });
 
