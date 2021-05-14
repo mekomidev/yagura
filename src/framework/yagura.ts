@@ -8,7 +8,7 @@ import { ServerEvent, ServerEventType } from './server.event';
 
 require('clarify');
 import * as colors from 'colors/safe';
-import { ErrorHandler } from '../services/errorHandler.service';
+import { DefaultErrorHandler, ErrorHandler } from '../services/errorHandler.service';
 
 export class Yagura {
     private _isInit: boolean;
@@ -19,6 +19,7 @@ export class Yagura {
         const app: Yagura = new Yagura(layers);
 
         // Initialize services
+        await app.registerService(new DefaultErrorHandler());
         app.logger = await app.registerService(new DefaultLogger());
         await app._initializeServices(services ?? []);
 
@@ -26,6 +27,8 @@ export class Yagura {
         await app._initializeStack();
 
         app._isInit = true;
+        await app.dispatch(new ServerEvent(ServerEventType.start));
+
         return app;
     }
 
@@ -74,27 +77,28 @@ export class Yagura {
         }
 
         // Check if event was handled already
-        if (event.guard.wasHandled()) {
+        if (event.wasConsumed) {
             this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
 
             if (process.env.NODE_ENV !== 'production') {
                 // do nothing, let it loop
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 this.logger.warn(`Re-handled event: ${colors.bold(event.constructor.name)}#${event.id}`);
+                (event as any).guard._handledFlag = false;
             } else {
                 // drop the event
                 this.logger.warn('Dropping event');
                 return;
             }
-        } else {
-            event.guard.flagHandled();
         }
 
         for (const layer of this._stack) {
             try {
-                event = await layer.handleEvent(event);
-                if (!event) {
+                const output: YaguraEvent = await layer.handleEvent(event);
+                if (!output && !event.wasConsumed) {
+                    await event.consume();
                     break;
+                } else {
+                    event = output;
                 }
             } catch (e) {
                 try {
@@ -105,6 +109,11 @@ export class Yagura {
 
                 break;
             }
+        }
+
+        // If event wasn't consumed by layers, force-consume
+        if(!event.wasConsumed) {
+            await event.consume();
         }
     }
 
@@ -133,10 +142,6 @@ export class Yagura {
     }
 
     public getService<M extends Service>(name: string, vendor?: string): M {
-        if (!this._isInit) {
-            throw new Error('getService method called before start');
-        }
-
         const m: ServiceHolder<M> = this._services[name];
 
         if (!m) {
@@ -161,10 +166,6 @@ export class Yagura {
      * @returns {Service} a Service proxy for the requested Service
      */
     public getServiceProxy<M extends Service>(name: string, vendor?: string): M {
-        if (!this._isInit) {
-            throw new Error('getServiceProxy method called before start');
-        }
-
         const app: Yagura = this;
         const proxy: M = new Proxy<M>(app.getService(name, vendor), {
             get: (o, key) => {
@@ -252,7 +253,7 @@ export class Yagura {
             }
 
             // Check if event was handled already
-            if (!!err.guard.wasHandled()) {
+            if (!!err.guard.wasHandled) {
                 this.logger.warn(`An already handled error has been sent to Yagura for handling again; this could cause an error handling loop\n${err.stack}`);
             } else {
                 err.guard.flagHandled();
