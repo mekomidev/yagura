@@ -19,6 +19,7 @@ export class Yagura {
         const app: Yagura = new Yagura(layers);
 
         // Initialize services
+        await app.registerService(new DefaultErrorHandler());
         app.logger = await app.registerService(new DefaultLogger());
         await app._initializeServices(services ?? []);
 
