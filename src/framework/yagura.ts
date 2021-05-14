@@ -19,7 +19,7 @@ export class Yagura {
         const app: Yagura = new Yagura(layers);
 
         // Initialize services
-        app.logger = app.registerService(new DefaultLogger());
+        app.logger = await app.registerService(new DefaultLogger());
         await app._initializeServices(services ?? []);
 
         // Initialize layers
@@ -125,8 +125,7 @@ export class Yagura {
     private async _initializeServices(services: Service[]) {
         for(const s of services) {
             try {
-                this.registerService(s);
-                await s.initialize();
+                await this.registerService(s);
             } catch(err) {
                 this.logger.error(new Error(`Failed to initialize service '${s.constructor.name}\n${(err as Error).stack.toString()}'`));
             }
@@ -144,7 +143,7 @@ export class Yagura {
             return null;
         } else {
             if (vendor) {
-                if (!m.vendors[vendor]) {
+                if (m.vendors[vendor]) {
                     return m.vendors[vendor];
                 } else {
                     return null;
@@ -170,7 +169,7 @@ export class Yagura {
         return null;
     }
 
-    public registerService<M extends Service>(mod: M): M {
+    public async registerService<M extends Service>(mod: M): Promise<M> {
         // TODO: evaluate whether necessary
         // if (!this._isInit) {
         //     throw new Error('registerService method called before start');
@@ -199,6 +198,7 @@ export class Yagura {
         }
 
         mod.mount(this);
+        await mod.initialize();
 
         // TODO: evaluate whether the proxy should be returned
         return mod; // this.getServiceProxy(mod.name);

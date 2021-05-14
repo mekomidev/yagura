@@ -16,7 +16,7 @@ export abstract class Service {
         if (!this.yagura) {
             this.yagura = instance;
         } else {
-            throw new YaguraError('This layer has already been mounted');
+            throw new YaguraError('This service has already been mounted');
         }
     }
 
