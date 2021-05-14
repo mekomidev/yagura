@@ -1,5 +1,6 @@
 import { HandleGuard } from "../utils/handleGuard";
 import { createHash, randomBytes } from "crypto";
+import { YaguraError } from "..";
 
 export abstract class YaguraEvent {
     public readonly id: string;
@@ -22,8 +23,12 @@ export abstract class YaguraEvent {
      * Do not override.
      */
     public async consume(): Promise<void> {
-        this.guard.flagHandled();
-        await this.onConsumed();
+        if(!this.wasConsumed) {
+            this.guard.flagHandled();
+            await this.onConsumed();
+        } else {
+            throw new YaguraError(`${this.constructor.name}#${this.id} event consumed multiple times`);
+        }
     }
 
     public get wasConsumed() {

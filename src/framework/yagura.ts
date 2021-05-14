@@ -109,11 +109,11 @@ export class Yagura {
 
                 break;
             }
+        }
 
-            // If event wasn't consumed by layers, force-consume
-            if(!event.wasConsumed) {
-                await event.consume();
-            }
+        // If event wasn't consumed by layers, force-consume
+        if(!event.wasConsumed) {
+            await event.consume();
         }
     }
 
