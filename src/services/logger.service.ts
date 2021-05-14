@@ -26,7 +26,7 @@ export class DefaultLogger extends Logger {
 
     public async initialize() { /* */ }
 
-    public error(err: string | Error): void { console.error(`[ERROR] ${err instanceof Error ? err.stack.toString() : err}`.red); }
+    public error(err: string | Error): void { console.error(`[ERROR] ${err instanceof Error ? err.stack.toString().dim : err}`.red); }
     public warn(text: string): void { console.log(`[WARN] ${text}`.yellow); }
     public info(text: string): void { console.log(`[INFO] ${text}`.white); }
     public debug(text: string): void { console.log(`[DEBUG] ${text}`.blue); }
