@@ -7,7 +7,7 @@
     "scripts": {
         "clean": "rm -rf ./lib",
         "build": "./node_modules/typescript/bin/tsc",
-        "test": "TS_NODE_PROJECT=\"tsconfig.test.json\" NODE_ENV=test nyc --reporter=lcov --reporter=text-summary mocha -r ts-node/register ./test/**/*.test.ts",
+        "test": "TS_NODE_PROJECT=\"tsconfig.test.json\" NODE_ENV=test nyc --reporter=lcov --reporter=text-summary mocha -s 1 -r ts-node/register ./test/**/*.test.ts",
         "release": "npm run test && npm run clean && npm run build && npm publish"
     },
     "files": [

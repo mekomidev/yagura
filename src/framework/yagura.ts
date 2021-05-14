@@ -160,13 +160,44 @@ export class Yagura {
      * @param name name of the Service to be adapted
      * @returns {Service} a Service proxy for the requested Service
      */
-    public getServiceProxy<M extends Service>(name: string): M {
+    public getServiceProxy<M extends Service>(name: string, vendor?: string): M {
         if (!this._isInit) {
             throw new Error('getServiceProxy method called before start');
         }
 
-        throw new StubError();
-        return null;
+        const app: Yagura = this;
+        const proxy: M = new Proxy<M>(app.getService(name, vendor), {
+            get: (o, key) => {
+                return app.getService(name, vendor)[key];
+            },
+            set: (o, key, value) => {
+                const service: M = app.getService(name, vendor);
+                if(Object(service).hasOwnProperty(key)) {
+                    service[key] = value;
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            apply: (o, key) => {
+                return app.getService(name, vendor)[key]();
+            },
+            getPrototypeOf: (o) => {
+                return Object.getPrototypeOf(app.getService(name, vendor));
+            },
+            setPrototypeOf: (o, v) => {
+                return Object.setPrototypeOf(app.getService(name, vendor), v);
+            },
+            isExtensible: (o) => {
+                return Object.isExtensible(app.getService(name, vendor));
+            },
+            preventExtensions: (o) => {
+                Object.preventExtensions(app.getService(name, vendor));
+                return true;
+            }
+        });
+
+        return proxy;
     }
 
     public async registerService<M extends Service>(mod: M): Promise<M> {

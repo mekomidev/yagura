@@ -13,19 +13,26 @@ describe('Framework', () => {
 
     describe('Service handling', () => {
         class DummyService extends Service {
-            constructor() {
-                super('Dummy', 'test');
+            constructor(vendor: string = 'test') {
+                super('Dummy', vendor);
             }
 
             public async initialize() { /* */ }
+
+            public text: string = 'world';
+            public hello(): string {
+                return this.text;
+            }
         }
 
-        class BetterDummyService extends Service {
+        class BetterDummyService extends DummyService {
             constructor() {
-                super('Dummy', 'cool');
+                super('cool');
             }
 
             public async initialize() { /* */ }
+
+            public text: string = "cool world";
         }
 
         let app: Yagura;
@@ -79,6 +86,27 @@ describe('Framework', () => {
             expect(app.getService('Dummy'), "New service not active").to.be.eq(service);
             expect(app.getService('Dummy', 'cool'), "New service not available by vendor").to.be.eq(service);
             expect(app.getService('Dummy', 'test'), "Old service has been deregistered").to.be.instanceOf(DummyService);
+        });
+
+        it('should return a valid service proxy', async () => {
+            app = await Yagura.start([]);
+
+            await app.registerService(new DummyService());
+            const proxy: DummyService = app.getServiceProxy('Dummy');
+
+            // check basic access
+            expect(proxy, "Isn't a vaild instance of service").to.be.instanceOf(DummyService);
+            expect(proxy.text, "Doesn't allow read access to its property").to.be.eq('world');
+
+            proxy.text = 'za warudo';
+            expect(proxy.text, "Doesn't allow write access to its property").to.be.eq('za warudo');
+
+            expect(proxy.hello(), "Doesn't allow read access to its method").to.be.eq('za warudo');
+
+            // check if replacement works
+            await app.registerService(new BetterDummyService());
+            expect(proxy, "Isn't a vaild instance of new service").to.be.instanceOf(BetterDummyService);
+            expect(proxy.text, "Doesn't allow read access to its property").to.be.eq('cool world');
         });
     });
 
