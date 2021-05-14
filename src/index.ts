@@ -5,7 +5,7 @@ import { Service } from './framework/service';
 import { YaguraEvent, eventFilter } from './framework/event';
 
 import { YaguraError } from './utils/errors';
-import { TimeoutError, promiseTimeout } from './utils/promise.utils';
+import { promiseTimeout } from './utils/promise.utils';
 import { HandleGuard } from './utils/handleGuard';
 
 import { Logger, DefaultLogger } from './services/logger.service';
@@ -17,7 +17,7 @@ export {
     Service,
     YaguraEvent,
     // Errors
-    YaguraError, TimeoutError,
+    YaguraError,
     // Services
     Logger, DefaultLogger,
     // Utils

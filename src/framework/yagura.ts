@@ -1,14 +1,13 @@
 import { Layer } from './layer';
 import { Service } from './service';
-import { YaguraError, StubError } from '../utils/errors';
+import { YaguraError } from '../utils/errors';
 import { Logger, DefaultLogger } from '../services/logger.service';
 
-const colors = require('colors');
 import { YaguraEvent } from './event';
 import { ServerEvent, ServerEventType } from './server.event';
 
-import 'colors';
-import 'clarify';
+require('clarify');
+import * as colors from 'colors/safe';
 
 export class Yagura {
     private _isInit: boolean;
@@ -182,16 +181,16 @@ export class Yagura {
             apply: (o, key) => {
                 return app.getService(name, vendor)[key]();
             },
-            getPrototypeOf: (o) => {
+            getPrototypeOf: () => {
                 return Object.getPrototypeOf(app.getService(name, vendor));
             },
             setPrototypeOf: (o, v) => {
                 return Object.setPrototypeOf(app.getService(name, vendor), v);
             },
-            isExtensible: (o) => {
+            isExtensible: () => {
                 return Object.isExtensible(app.getService(name, vendor));
             },
-            preventExtensions: (o) => {
+            preventExtensions: () => {
                 Object.preventExtensions(app.getService(name, vendor));
                 return true;
             }

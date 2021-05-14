@@ -1,15 +1,15 @@
-export class TimeoutError extends Error {}
+class PromiseTimeoutError extends Error {}
 
 export const promiseTimeout = async function(ms: number, promise: Promise<any>, throwError: boolean = true) {
-    const timeout = new Promise((resolve, reject) => {
+    const timeout = new Promise((resolve) => {
         const id = setTimeout(() => {
             clearTimeout(id);
-            reject(new TimeoutError(`Promise timed out in ${ms}ms`));
+            resolve(new PromiseTimeoutError(`Promise timed out in ${ms}ms`));
         }, ms);
     });
 
     const result = await Promise.race([promise, timeout]);
-    if (result instanceof TimeoutError) {
+    if (result instanceof PromiseTimeoutError) {
         if (throwError) {
             throw result;
         } else {
