@@ -33,8 +33,4 @@ describe('Services', () => {
             expect(service.hello()).to.not.equal('world');
         });
     });
-
-    describe('Service container', () => {
-        
-    });
 });

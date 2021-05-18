@@ -58,7 +58,7 @@ describe('Framework', () => {
             expect(app.getService('Dummy'), "Service not registered").to.be.eq(service);
         });
 
-        it('should not mount twice', () => {
+        it('should fail to mount a Service twice', () => {
             const service: Service = app.getService('Dummy');
 
             try {
@@ -75,6 +75,10 @@ describe('Framework', () => {
             expect(service).to.be.instanceOf(DummyService);
         });
 
+        it('should return null when asking for a non-existent Service');
+
+        it('should return null when asking for a non-existent Service\'s proxy');
+
         it('should retrieve a registered service by vendor', () => {
             const service: Service = app.getService('Dummy', 'test');
 
@@ -90,25 +94,41 @@ describe('Framework', () => {
             expect(app.getService('Dummy', 'test'), "Old service has been deregistered").to.be.instanceOf(DummyService);
         });
 
-        it('should return a valid service proxy', async () => {
-            app = await Yagura.start([]);
+        describe('Service proxy', () => {
+            it('should return a service proxy', async () => {
+                app = await Yagura.start([]);
 
-            await app.registerService(new DummyService());
-            const proxy: DummyService = app.getServiceProxy('Dummy');
+                await app.registerService(new DummyService());
+                const proxy: DummyService = app.getServiceProxy('Dummy');
 
-            // check basic access
-            expect(proxy, "Isn't a vaild instance of service").to.be.instanceOf(DummyService);
-            expect(proxy.text, "Doesn't allow read access to its property").to.be.eq('world');
+                // check basic access
+                expect(proxy, "Isn't a vaild instance of service").to.be.instanceOf(DummyService);
+                expect(proxy.text, "Doesn't allow read access to its property").to.be.eq('world');
 
-            proxy.text = 'za warudo';
-            expect(proxy.text, "Doesn't allow write access to its property").to.be.eq('za warudo');
+                proxy.text = 'za warudo';
+                expect(proxy.text, "Doesn't allow write access to its property").to.be.eq('za warudo');
 
-            expect(proxy.hello(), "Doesn't allow read access to its method").to.be.eq('za warudo');
+                expect(proxy.hello(), "Doesn't allow read access to its method").to.be.eq('za warudo');
 
-            // check if replacement works
-            await app.registerService(new BetterDummyService());
-            expect(proxy, "Isn't a vaild instance of new service").to.be.instanceOf(BetterDummyService);
-            expect(proxy.text, "Doesn't allow read access to its property").to.be.eq('cool world');
+                // check if replacement works
+                await app.registerService(new BetterDummyService());
+                expect(proxy, "Isn't a vaild instance of new service").to.be.instanceOf(BetterDummyService);
+                expect(proxy.text, "Doesn't allow read access to its property").to.be.eq('cool world');
+            });
+
+            it('should return existing properties');
+
+            it('should not return non-existing properties');
+
+            it('should set existing properties');
+
+            it('should not set non-existing properties');
+
+            it('should return prototype');
+
+            it('should return whether is extensible');
+
+            it('should be able to prevent extensions');
         });
     });
 
@@ -132,13 +152,71 @@ describe('Framework', () => {
             expect((app as any)._stack).to.contain(layer);
         });
 
-        it('should contain the Yagura app reference only after mounting', async () => {
+        it('should contain the Yagura app reference after mounting', async () => {
             const layer = new DummyLayer();
-            expect((layer as any).yagura).to.not.be.an('object');
-
             const app = await Yagura.start([layer]);
             expect((layer as any).yagura).to.equal(app);
         });
+
+        it('should pass events through layers according to their declaration order', async () => {
+            class CounterEvent extends YaguraEvent {
+                public counter: number = 0;
+                protected async onConsumed() {
+                    expect(this.counter).to.be.eq(2);
+                }
+            }
+
+            class FirstLayer extends Layer {
+                public async initialize() { /* */ }
+                @eventFilter([CounterEvent])
+                public async handleEvent(event: CounterEvent): Promise<CounterEvent> {
+                    expect(event.counter).to.be.eq(0);
+                    ++event.counter;
+                    return event;
+                }
+            }
+
+            class SecondLayer extends Layer {
+                public async initialize() { /* */ }
+                @eventFilter([CounterEvent])
+                public async handleEvent(event: CounterEvent): Promise<CounterEvent> {
+                    expect(event.counter).to.be.eq(1);
+                    ++event.counter;
+                    return event;
+                }
+            }
+
+            const app = await Yagura.start([new FirstLayer({}), new SecondLayer({})]);
+            await app.dispatch(new CounterEvent({}));
+        });
+
+        it('should filter Events when eventFilter decorator is applied', async () => {
+            class GoodEvent extends YaguraEvent {}
+            class BadEvent extends YaguraEvent {}
+            class FilteringLayer extends Layer {
+                public async initialize() { /* */ }
+                @eventFilter([GoodEvent])
+                public async handleEvent(event: YaguraEvent): Promise<YaguraEvent> {
+                    await Promise.resolve(); return event;
+                }
+            }
+
+            const layer = new FilteringLayer({});
+            const app = await Yagura.start([layer]);
+
+            const eventA = new BadEvent({});
+            const fakeA = sinon.fake.resolves(null);
+            sinon.replace(eventA, 'consume', fakeA);
+            await app.dispatch(eventA);
+            expect(fakeA.callCount).to.be.eq(2);        // consumed twice, after return from layer and end of flow
+
+            const eventB = new GoodEvent({});
+            const fakeB = sinon.fake.resolves(null);
+            sinon.replace(eventB, 'consume', fakeB);
+            await app.dispatch(eventB);
+            expect(fakeB.callCount).to.be.eq(1);        // consumed once, at end of flow because untouched by layers
+        });
+
         it('should notify Layers on shutdown', async () => {
             const layer = new DummyLayer();
             const app = await Yagura.start([layer]);
@@ -171,6 +249,8 @@ describe('Framework', () => {
 
             expect(fake.called, "Service not initialized").to.be.eq(true);
         });
+        it('should initialize layers at start');
+        it('should dispatch a ServerEvent of type `start`');
     });
 
     describe('Event handling', () => {
@@ -279,7 +359,18 @@ describe('Framework', () => {
 
             process.env.NODE_ENV = 'test';
         });
+        it('should consume event if none of the layers don\'t');
     });
 
-    describe('Error handling', () => {});
+    describe('Error handling', () => {
+        it('should catch errors at stack initialization');
+        it('should catch errors at Services\' initialization');
+        it('should catch errors when event handling by Layer fails');
+        it('should catch errors when error handling by Layer fails');
+        it('should catch errors when forced consumption of Event fails');
+        it('should throw error when dispatching event before initialization');
+        it('should handle given error');
+        it('should not throw any other errors itself');
+        it('should not handle the same error more than once');
+    });
 });
