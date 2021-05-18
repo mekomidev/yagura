@@ -1,4 +1,4 @@
-import { Yagura, Layer, Service, YaguraEvent, YaguraError } from '../src';
+import { Yagura, Layer, Service, YaguraEvent, YaguraError, eventFilter } from '../src';
 import { ServerEvent, ServerEventType } from '../src/framework/server.event';
 
 import 'mocha';

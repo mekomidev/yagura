@@ -54,9 +54,9 @@ export class Yagura {
         this._stack = layers;
     }
 
+    /** Initializes Layers in a bottom-up order */
     private async _initializeStack() {
-        // TODO: consider cache impact given by reverting the array
-        for (const o of this._stack.reverse()) {
+        for (const o of this._stack.slice().reverse()) {
             try {
                 o.mount(this);
                 await o.initialize();
@@ -76,45 +76,59 @@ export class Yagura {
             throw new Error('dispatch method called before initialize');
         }
 
+        this.logger.debug(`[EVENT] Dispatched event ${event.constructor.name}#${event.id}`);
+        const startTime: number = Date.now();
+
         // Check if event was handled already
         if (event.wasConsumed) {
-            this.logger.warn(`An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
+            this.logger.warn(`[EVENT] An already handled event has been sent to Yagura for handling again; this could cause an event handling loop`);
 
             if (process.env.NODE_ENV !== 'production') {
                 // do nothing, let it loop
-                this.logger.warn(`Re-handled event: ${colors.bold(event.constructor.name)}#${event.id}`);
+                this.logger.warn(`[EVENT] Development mode, recycling event: ${colors.bold(event.constructor.name)}#${event.id}`);
                 (event as any).guard._handledFlag = false;
             } else {
                 // drop the event
-                this.logger.warn('Dropping event');
+                this.logger.warn('[EVENT] Dropping event');
                 return;
             }
         }
 
         for (const layer of this._stack) {
             try {
-                const output: YaguraEvent = await layer.handleEvent(event);
-                if (!output && !event.wasConsumed) {
-                    await event.consume();
-                    break;
+                this.logger.verbose(`[EVENT] Handling event: ${event.constructor.name}#${event.id.dim} @ ${layer.constructor.name}`);
+                const output = await layer.handleEvent(event);
+                if (!output) {                                                  // null output implies consumed event
+                    if(!event.wasConsumed) {                                    // ensure event consumed
+                        await event.consume();
+                    }
+                    this.logger.verbose('[EVENT] event implicitly consumed, consuming post-layer');
+                    break;                                                      // stop event flow when event consumed
                 } else {
+                    this.logger.verbose('[EVENT] flow should continue');
                     event = output;
                 }
             } catch (e) {
+                this.logger.verbose('[EVENT] flow errored');
                 try {
                     await layer.handleError(e);
                 } catch (e2) {
                     await this.handleError(e2);
                 }
 
-                break;
+                break;  // stop event flow on error
             }
+
+            this.logger.verbose('[EVENT] continue event flow');
         }
 
         // If event wasn't consumed by layers, force-consume
-        if(!event.wasConsumed) {
+        if(event && !event.wasConsumed) {
             await event.consume();
         }
+
+        this.logger.verbose('[EVENT] event flow end');
+        this.logger.debug(`[EVENT] Consumed event ${event.constructor.name}#${event.id} ` + `(${Date.now() - startTime}ms)`.dim);
     }
 
     /*
