@@ -1,4 +1,6 @@
-import { Yagura, Service } from '../src';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/require-await */
+import { Service } from '../src';
 
 import 'mocha';
 import { expect } from 'chai';

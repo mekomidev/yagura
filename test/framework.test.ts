@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/require-await */
 import { Yagura, Layer, Service, YaguraEvent, YaguraError, eventFilter } from '../src';
 import { ServerEvent, ServerEventType } from '../src/framework/server.event';
 
