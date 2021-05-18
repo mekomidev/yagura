@@ -40,6 +40,10 @@ export abstract class YaguraEvent {
         return createHash('sha256').update(this.data.toString()).digest('hex');
     }
 
+    public toString(): string {
+        return `${this.constructor.name}#${this.id}\n${JSON.stringify(this.data)}`;
+    }
+
     protected readonly guard: HandleGuard = new HandleGuard();
 }
 
@@ -68,29 +72,33 @@ export function eventFilter(filter: typeof YaguraEvent[] | EventFilter) {
     if (filter instanceof Array) {
         const allowedEvents: typeof YaguraEvent[] = filter;
 
-        return function(target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+        return function(target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<YaguraEvent>>) {
             const original = descriptor.value;
-            descriptor.value = function() {
+            descriptor.value = async function() {
                 const context = this;
                 const args = arguments;
 
                 // Call filter
                 if (allowedEvents.find((eventType: typeof YaguraEvent) => args[0].constructor.name === eventType.name )) {
-                    original.apply(context, args);
+                    return await original.apply(context, args);
+                } else {
+                    return null;
                 }
             };
         };
     } else if (filter instanceof Function) {
         const filterFunction: EventFilter = filter;
-        return function(target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+        return function(target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<YaguraEvent>>) {
             const original = descriptor.value;
-            descriptor.value = function() {
+            descriptor.value = async function() {
                 const context = this;
                 const args = arguments;
 
                 // Call filter
                 if (filterFunction(args[0])) {
-                    original.apply(context, args);
+                    return await original.apply(context, args);
+                } else {
+                    return null;
                 }
             };
         };
