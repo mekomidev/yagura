@@ -6,7 +6,6 @@ import { Logger, DefaultLogger } from '../services/logger.service';
 import { YaguraEvent } from './event';
 import { ServerEvent, ServerEventType } from './server.event';
 
-require('clarify');
 import * as colors from 'colors/safe';
 import { DefaultErrorHandler, ErrorHandler } from '../services/errorHandler.service';
 
