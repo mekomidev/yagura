@@ -121,8 +121,13 @@ export class Yagura {
         }
 
         // If event wasn't consumed by layers, force-consume
-        if(event && !event.wasConsumed) {
-            await event.consume();
+        try {
+            if(event && !event.wasConsumed) {
+                await event.consume();
+            }
+        } catch (err) {
+            this.logger.verbose('[EVENT] forced consumption errored');
+            await this.handleError(err);
         }
 
         this.logger.verbose('[EVENT] event flow end');
