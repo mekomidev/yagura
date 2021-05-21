@@ -19,9 +19,7 @@ export class DefaultErrorHandler extends ErrorHandler {
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await
-
     public async handle(err: Error) {
         this.yagura.getService<Logger>('Logger').error(err);
-        return new Promise<void>((resolve) => resolve);
     }
 }
