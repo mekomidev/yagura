@@ -1,6 +1,6 @@
 {
     "name": "@yagura/yagura",
-    "version": "0.1.0-alpha.1",
+    "version": "0.1.0-alpha.2",
     "description": "A solid, event-based layered web framework - written in TypeScript for Node.js",
     "main": "lib/js/index.js",
     "types": "lib/declarations/index.d.ts",
