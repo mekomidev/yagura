@@ -17,5 +17,5 @@ script:
   - npm run test
 after_script:
   - |
-    npm install --save-dev coveralls@3.*
+    npm install --save-dev coveralls
     coveralls < ./coverage/lcov.info
