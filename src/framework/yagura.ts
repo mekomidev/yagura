@@ -148,7 +148,7 @@ export class Yagura {
             try {
                 await this.registerService(s);
             } catch(err) {
-                this.logger.error(new Error(`Failed to initialize service '${s.constructor.name}\n${(err as Error).stack.toString()}'`));
+                await this.handleError(new Error(`Failed to initialize service '${s.constructor.name}\n${(err as Error).stack.toString()}'`));
             }
         }
     }
@@ -249,7 +249,9 @@ export class Yagura {
 
     public async handleError(e: Error | YaguraError) {
         if (!this._isInit) {
-            throw new Error('handleError method called before start');
+            console.warn(`Error occurred before initialization, throwing`);
+            throw e;
+            return;
         }
 
         // Everything's wrapped in a try-catch to avoid infinite loops
