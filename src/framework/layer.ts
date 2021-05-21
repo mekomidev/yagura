@@ -15,8 +15,7 @@ export abstract class Layer implements EventHandler {
      */
     constructor(config?: any) {
         // Deep copy config (this excludes functions!) and deep freeze it
-        // TODO: review whether this is necessary
-        this.config = deepFreeze(JSON.parse(JSON.stringify(config)));
+        if(!!config) this.config = deepFreeze(JSON.parse(JSON.stringify(config)));
     }
 
     protected yagura: Yagura;
