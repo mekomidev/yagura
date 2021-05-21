@@ -6,7 +6,6 @@ import { Logger, DefaultLogger } from '../services/logger.service';
 import { YaguraEvent } from './event';
 import { ServerEvent, ServerEventType } from './server.event';
 
-require('clarify');
 import * as colors from 'colors/safe';
 import { DefaultErrorHandler, ErrorHandler } from '../services/errorHandler.service';
 
@@ -19,8 +18,8 @@ export class Yagura {
         const app: Yagura = new Yagura(layers);
 
         // Initialize services
-        await app.registerService(new DefaultErrorHandler());
         app.logger = await app.registerService(new DefaultLogger());
+        await app.registerService(new DefaultErrorHandler());
         await app._initializeServices(services ?? []);
 
         // Initialize layers
@@ -58,8 +57,7 @@ export class Yagura {
     private async _initializeStack() {
         for (const o of this._stack.slice().reverse()) {
             try {
-                o.mount(this);
-                await o.initialize();
+                await o.initialize(this);
             } catch (err) {
                 this.logger.error(`Failed to initialize layer: ${o.toString()}`);
                 await this.handleError(err);
@@ -123,8 +121,13 @@ export class Yagura {
         }
 
         // If event wasn't consumed by layers, force-consume
-        if(event && !event.wasConsumed) {
-            await event.consume();
+        try {
+            if(event && !event.wasConsumed) {
+                await event.consume();
+            }
+        } catch (err) {
+            this.logger.verbose('[EVENT] forced consumption errored');
+            await this.handleError(err);
         }
 
         this.logger.verbose('[EVENT] event flow end');
@@ -150,7 +153,7 @@ export class Yagura {
             try {
                 await this.registerService(s);
             } catch(err) {
-                this.logger.error(new Error(`Failed to initialize service '${s.constructor.name}\n${(err as Error).stack.toString()}'`));
+                await this.handleError(new Error(`Failed to initialize service '${s.constructor.name}\n${(err as Error).stack.toString()}'`));
             }
         }
     }
@@ -180,6 +183,8 @@ export class Yagura {
      * @returns {Service} a Service proxy for the requested Service
      */
     public getServiceProxy<M extends Service>(name: string, vendor?: string): M {
+        if(!this.getService(name, vendor)) { return null; }
+
         const app: Yagura = this;
         const proxy: M = new Proxy<M>(app.getService(name, vendor), {
             get: (o, key) => {
@@ -243,8 +248,7 @@ export class Yagura {
             }
         }
 
-        mod.mount(this);
-        await mod.initialize();
+        await mod.initialize(this);
 
         // TODO: evaluate whether the proxy should be returned
         return mod; // this.getServiceProxy(mod.name);
@@ -252,7 +256,9 @@ export class Yagura {
 
     public async handleError(e: Error | YaguraError) {
         if (!this._isInit) {
-            throw new Error('handleError method called before start');
+            console.warn(`Error occurred before initialization, throwing`);
+            throw e;
+            return;
         }
 
         // Everything's wrapped in a try-catch to avoid infinite loops

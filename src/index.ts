@@ -9,6 +9,7 @@ import { promiseTimeout } from './utils/promise.utils';
 import { HandleGuard } from './utils/handleGuard';
 
 import { Logger, DefaultLogger } from './services/logger.service';
+import { ErrorHandler, DefaultErrorHandler } from './services/errorHandler.service';
 
 export {
     // Framework
@@ -20,6 +21,7 @@ export {
     YaguraError,
     // Services
     Logger, DefaultLogger,
+    ErrorHandler, DefaultErrorHandler,
     // Utils
     eventFilter, promiseTimeout, HandleGuard
 };
