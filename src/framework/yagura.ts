@@ -57,8 +57,7 @@ export class Yagura {
     private async _initializeStack() {
         for (const o of this._stack.slice().reverse()) {
             try {
-                o.mount(this);
-                await o.initialize();
+                await o.initialize(this);
             } catch (err) {
                 this.logger.error(`Failed to initialize layer: ${o.toString()}`);
                 await this.handleError(err);
@@ -242,8 +241,7 @@ export class Yagura {
             }
         }
 
-        mod.mount(this);
-        await mod.initialize();
+        await mod.initialize(this);
 
         // TODO: evaluate whether the proxy should be returned
         return mod; // this.getServiceProxy(mod.name);

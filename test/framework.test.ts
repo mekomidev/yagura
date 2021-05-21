@@ -19,8 +19,6 @@ describe('Framework', () => {
                 super('Dummy', vendor);
             }
 
-            public async initialize() { /* */ }
-
             public text: string = 'world';
             public hello(): string {
                 return this.text;
@@ -31,8 +29,6 @@ describe('Framework', () => {
             constructor() {
                 super('cool');
             }
-
-            public async initialize() { /* */ }
 
             public text: string = "cool world";
         }
@@ -139,7 +135,6 @@ describe('Framework', () => {
                 super({});
             }
 
-            public async initialize() { /* */ }
             public async handleEvent(e: YaguraEvent): Promise<YaguraEvent> {
                 return null;
             }
@@ -167,7 +162,6 @@ describe('Framework', () => {
             }
 
             class FirstLayer extends Layer {
-                public async initialize() { /* */ }
                 @eventFilter([CounterEvent])
                 public async handleEvent(event: CounterEvent): Promise<CounterEvent> {
                     expect(event.counter).to.be.eq(0);
@@ -177,7 +171,6 @@ describe('Framework', () => {
             }
 
             class SecondLayer extends Layer {
-                public async initialize() { /* */ }
                 @eventFilter([CounterEvent])
                 public async handleEvent(event: CounterEvent): Promise<CounterEvent> {
                     expect(event.counter).to.be.eq(1);
@@ -194,7 +187,6 @@ describe('Framework', () => {
             class GoodEvent extends YaguraEvent {}
             class BadEvent extends YaguraEvent {}
             class FilteringLayer extends Layer {
-                public async initialize() { /* */ }
                 @eventFilter([GoodEvent])
                 public async handleEvent(event: YaguraEvent): Promise<YaguraEvent> {
                     await Promise.resolve(); return event;
@@ -260,7 +252,6 @@ describe('Framework', () => {
                 super({});
             }
 
-            public async initialize() { /* */ }
             public async handleEvent(e: YaguraEvent): Promise<YaguraEvent> {
                 return null;
             }

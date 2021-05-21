@@ -3,6 +3,11 @@ import { YaguraError } from '../utils/errors';
 import { YaguraEvent, EventHandler } from './event';
 import { Yagura } from './yagura';
 
+export interface Layer {
+    /** Called when the app is being initialized */
+    onInitialize?(): Promise<void>;
+}
+
 export abstract class Layer implements EventHandler {
     public readonly name: string;
 
@@ -20,16 +25,14 @@ export abstract class Layer implements EventHandler {
 
     protected yagura: Yagura;
 
-    public mount(instance: Yagura): void {
+    public async initialize(instance: Yagura): Promise<void> {
         if (!this.yagura) {
             this.yagura = instance;
+            if(this.onInitialize) await this.onInitialize();
         } else {
             throw new YaguraError('This layer has already been mounted');
         }
     }
-
-    /** Called when the app is being initialized */
-    public abstract initialize(): Promise<void>;
 
     /**
      * Handles incoming events
