@@ -1,26 +1,27 @@
 [![Yagura Logo](logo.png)](http://dev.mekomidev.com/yagura)
 
-  A solid, event-based layered web framework - written in TypeScript for [Node.js](http://nodejs.org)
+  A modular, unopinonated event-based web framework - written in TypeScript for [Node.js](http://nodejs.org)
 
-  This package is currently **HIGHLY EXPERIMENTAL** and undergoing development! [Follow us on Twitter](https://twitter.com/mekomidev) for release announcements!
+  This package is currently undergoing development! [Follow us on Twitter](https://twitter.com/mekomidev) for updates and release announcements!
 
 
 [![npm (scoped)](https://img.shields.io/npm/v/@yagura/yagura)](https://npmjs.com/@yagura/yagura)
 ![Travis (.com)](https://img.shields.io/travis/com/mekomidev/yagura)
 [![Coverage Status](https://coveralls.io/repos/github/mekomidev/yagura/badge.svg?branch=master)](https://coveralls.io/github/mekomidev/yagura?branch=master)
-<!-- [![npm](https://img.shields.io/npm/dm/@yagura/yagura)](https://npmjs.com/@yagura/yagura) -->
+[![npm](https://img.shields.io/npm/dm/@yagura/yagura)](https://npmjs.com/@yagura/yagura)
 
-## Features
+## Why use Yagura?
 
-  * Promise-based asynchronous API in TypeScript
-  * Modular and stackable **event-based** structure
+  * **Write solid code**: Promise-based, strongly typed API in TypeScript
+  * **Reuse your code**: Modular and flexible **event-based** structure
     * Stack your `Layer`s
     * Process an event as it trickles down through each `Layer` sequentially
-    * Process events in parallel by using a `ParallelScaffold`
-  * Dependency management
-    * Implement `Service`s and inject dependencies through the `ServiceContainer`
-  * Distributed event processing ([**upcoming** in v0.3.0](https://github.com/mekomidev/yagura/wiki/Roadmap))
+    * Use `Service`s to connect your application with the outside world (DBs, other APIs, etc.)
+  * **Scale your app**: distributed event processing ([**coming soon**](https://github.com/mekomidev/yagura/wiki/Roadmap))
+  * **Do it your way**: Yagura gives you an unopinionated structure - you choose how to implement your solution
 
+
+*Do you use Yagura? Tell us more, we'd love to learn how to make it better: [Twitter](https://twitter.com/mekomidev)*
 
 ## Philosophy
 
@@ -100,10 +101,12 @@ Check out **Yagura's extension packages** to develop specific types of applicati
 
  - [`@yagura/http`](https://github.com/mekomidev/yagura-http) HTTP server and API development tools (supports `HTTP/2`!)
  - [`@yagura/realtime`](https://github.com/mekomidev/yagura-realtime) base Layers for realtime-based server development (such as *MQTT*, *WebSockets*, *raw sockets (TCP/UDP)*, etc.)
- <!-- - [`@yagura/mqtt`](https://github.com/mekomidev/yagura-mqtt) MQTT broker and event router -->
-  <!-- - [`@yagura/parallel`](https://github.com/mekomidev/yagura-parallel) set of tools for distributed event processing; to be used with the [`seirou`](https://github.com/mekomidev/seirou) event dispatch server -->
+ <!-- - [`@yagura/realtime-mqtt`](https://github.com/mekomidev/yagura-mqtt) MQTT broker and event router -->
+  <!-- - [`@yagura/hokura`](https://github.com/mekomidev/hokura) example application implementing distributed event dispatch; -->
 
 ## Contribution guide
+
+TBD
 
 ### Tests
 
