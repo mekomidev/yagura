@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/require-await */
 import { Yagura, Layer, Service, YaguraEvent, YaguraError, ErrorHandler, eventFilter } from '../src';
-import { ServerEvent, ServerEventType } from '../src/framework/server.event';
+import { AppEvent, AppEventType } from '../src/framework/app.event';
 
 import 'mocha';
 import * as sinon from 'sinon';
@@ -275,8 +275,8 @@ describe('Framework', () => {
 
             (app as any)._handleShutdown();
 
-            expect(fake.lastCall.lastArg).to.be.instanceOf(ServerEvent);
-            expect((fake.lastCall.lastArg as ServerEvent).data).to.equal(ServerEventType.shutdown);
+            expect(fake.lastCall.lastArg).to.be.instanceOf(AppEvent);
+            expect((fake.lastCall.lastArg as AppEvent).data).to.equal(AppEventType.shutdown);
         });
     });
 
@@ -297,8 +297,8 @@ describe('Framework', () => {
             spy.restore();
 
             expect(spy.called, "Dispatch not called").to.be.eq(true);
-            expect(spy.args[0][0], "Not a ServerEvent").to.be.instanceOf(ServerEvent);
-            expect((spy.args[0][0] as ServerEvent).data, "Not value 'start'").to.be.eq(ServerEventType.start);
+            expect(spy.args[0][0], "Not a ServerEvent").to.be.instanceOf(AppEvent);
+            expect((spy.args[0][0] as AppEvent).data, "Not value 'start'").to.be.eq(AppEventType.start);
         });
     });
 
@@ -505,7 +505,7 @@ describe('Framework', () => {
 
         it('should catch errors when forced consumption of Event fails', async () => {
             const fake = sinon.fake.throws(new Error('error thrown'));
-            sinon.replace(ServerEvent.prototype, 'consume', fake);
+            sinon.replace(AppEvent.prototype, 'consume', fake);
 
             const spy = sinon.spy(Yagura.prototype, 'handleError');
 

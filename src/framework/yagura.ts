@@ -4,7 +4,7 @@ import { YaguraError } from '../utils/errors';
 import { Logger, DefaultLogger } from '../services/logger.service';
 
 import { YaguraEvent } from './event';
-import { ServerEvent, ServerEventType } from './server.event';
+import { AppEvent, AppEventType } from './app.event';
 
 import * as colors from 'colors/safe';
 import { DefaultErrorHandler, ErrorHandler } from '../services/errorHandler.service';
@@ -287,7 +287,7 @@ export class Yagura {
 
     private async _handleShutdown() {
         this.logger.info('Shutting down...');
-        await this.dispatch(new ServerEvent(ServerEventType.shutdown));
+        await this.dispatch(new AppEvent(AppEventType.shutdown));
     }
 }
 
