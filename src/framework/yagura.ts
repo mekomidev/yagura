@@ -4,7 +4,7 @@ import { YaguraError } from '../utils/errors';
 import { Logger, DefaultLogger } from '../services/logger.service';
 
 import { YaguraEvent } from './event';
-import { ServerEvent, ServerEventType } from './server.event';
+import { AppEvent, AppEventType } from './app.event';
 
 import * as colors from 'colors/safe';
 import { DefaultErrorHandler, ErrorHandler } from '../services/errorHandler.service';
@@ -25,13 +25,34 @@ export class Yagura {
         // Initialize layers
         await app._initializeStack();
 
+        // Set app state to initialized
         app._isInit = true;
-        await app.dispatch(new ServerEvent(ServerEventType.start));
+        app._initializeHandlers();
 
+        // Dispatch start event
+        await app.dispatch(new AppEvent(AppEventType.start));
         return app;
     }
 
     private constructor(layers: Layer[]) {
+        this._stack = layers;
+    }
+
+    /** Initializes Layers in a bottom-up order */
+    private async _initializeStack() {
+        for (const o of this._stack.slice().reverse()) {
+            try {
+                await o.initialize(this);
+            } catch (err) {
+                this.logger.error(`Failed to initialize layer: ${o.toString()}`);
+                await this.handleError(err);
+                break;
+            }
+        }
+    }
+
+    /** Initializes Node error handlers */
+    private _initializeHandlers() {
         // Mount handlers
         if (process.env.NODE_ENV !== 'test') {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -48,21 +69,6 @@ export class Yagura {
             process.on('uncaughtException', async (err: Error) => {
                 await this.handleError(err);
             });
-        }
-
-        this._stack = layers;
-    }
-
-    /** Initializes Layers in a bottom-up order */
-    private async _initializeStack() {
-        for (const o of this._stack.slice().reverse()) {
-            try {
-                await o.initialize(this);
-            } catch (err) {
-                this.logger.error(`Failed to initialize layer: ${o.toString()}`);
-                await this.handleError(err);
-                break;
-            }
         }
     }
 
@@ -256,9 +262,9 @@ export class Yagura {
 
     public async handleError(e: Error | YaguraError) {
         if (!this._isInit) {
-            console.warn(`Error occurred before initialization, throwing`);
-            throw e;
-            return;
+            console.warn(`Error occurred during initialization`);
+            console.error(e);
+            return process.exit(-1);
         }
 
         // Everything's wrapped in a try-catch to avoid infinite loops
@@ -287,7 +293,7 @@ export class Yagura {
 
     private async _handleShutdown() {
         this.logger.info('Shutting down...');
-        await this.dispatch(new ServerEvent(ServerEventType.shutdown));
+        await this.dispatch(new AppEvent(AppEventType.shutdown));
     }
 }
 
