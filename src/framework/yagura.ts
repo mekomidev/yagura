@@ -108,6 +108,9 @@ export class Yagura {
                     }
                     this.logger.verbose('[EVENT] event implicitly consumed, consuming post-layer');
                     break;                                                      // stop event flow when event consumed
+                } else if(event.wasConsumed) {
+                    this.logger.verbose('[EVENT] event explicitly consumed');
+                    break;                                                      // stop event flow when event consumed
                 } else {
                     this.logger.verbose('[EVENT] flow should continue');
                     event = output;
