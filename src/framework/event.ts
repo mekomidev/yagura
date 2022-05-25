@@ -60,7 +60,7 @@ export type EventFilter = (event: YaguraEvent) => boolean;
 /**
  * Event filtering decorator factory;
  * Given an array of YaguraEvent subclasses or a EventFilter function,
- * allows the decorated method to handle only the allowed events.
+ * allows the decorated method to handle only the allowed events, passing others to the next layer in the flow.
  *
  * Use this in your Layer to reduce event processing overhead.
  *
@@ -79,10 +79,10 @@ export function eventFilter(filter: typeof YaguraEvent[] | EventFilter) {
                 const args = arguments;
 
                 // Call filter
-                if (allowedEvents.find((eventType: typeof YaguraEvent) => args[0].constructor.name === eventType.name )) {
+                if (allowedEvents.find((eventType: typeof YaguraEvent) => args[0] instanceof eventType )) {
                     return await original.apply(context, args);
                 } else {
-                    return null;
+                    return args[0];
                 }
             };
         };

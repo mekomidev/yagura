@@ -18,9 +18,10 @@ export class Yagura {
         const app: Yagura = new Yagura(layers);
 
         // Initialize services
-        app.logger = await app.registerService(new DefaultLogger());
+        app.logger = await app.registerService(new DefaultLogger()); // instantiates a temporary logger for basic operations
         await app.registerService(new DefaultErrorHandler());
         await app._initializeServices(services ?? []);
+        app.logger = app.getService<Logger>('Logger'); // replaces the app logger with whatever is available after init
 
         // Initialize layers
         await app._initializeStack();
@@ -115,9 +116,9 @@ export class Yagura {
                 const output = await layer.handleEvent(event);
                 if (!output) {                                                  // null output implies consumed event
                     if(!event.wasConsumed) {                                    // ensure event consumed
+                        this.logger.verbose('[EVENT] event implicitly consumed, consuming post-layer');
                         await event.consume();
                     }
-                    this.logger.verbose('[EVENT] event implicitly consumed, consuming post-layer');
                     break;                                                      // stop event flow when event consumed
                 } else if(event.wasConsumed) {
                     this.logger.verbose('[EVENT] event explicitly consumed');

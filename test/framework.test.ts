@@ -243,27 +243,42 @@ describe('Framework', () => {
         it('should filter Events when eventFilter decorator is applied', async () => {
             class GoodEvent extends YaguraEvent {}
             class BadEvent extends YaguraEvent {}
-            class FilteringLayer extends Layer {
+            class FirstFilteringLayer extends Layer {
                 @eventFilter([GoodEvent])
                 public async handleEvent(event: YaguraEvent): Promise<YaguraEvent> {
-                    await Promise.resolve(); return event;
+                    expect(event).to.not.be.instanceOf(BadEvent);
+                    if(event instanceof GoodEvent)
+                        await event.consume();
+
+                    return null;
+                }
+            }
+            class SecondFilteringLayer extends Layer {
+                @eventFilter([BadEvent])
+                public async handleEvent(event: YaguraEvent): Promise<YaguraEvent> {
+                    expect(event).to.be.instanceOf(BadEvent);
+                    if(event instanceof BadEvent)
+                        await event.consume();
+
+                    return null;
                 }
             }
 
-            const layer = new FilteringLayer({});
-            const app = await Yagura.start([layer]);
+            const layerA = new FirstFilteringLayer({});
+            const layerB = new SecondFilteringLayer({});
+            const spyLayerB = sinon.spy(layerB, 'handleEvent');
+            const app = await Yagura.start([layerA, layerB]);
 
             const eventA = new BadEvent({});
-            const fakeA = sinon.fake.resolves(null);
-            sinon.replace(eventA, 'consume', fakeA);
+            const spyA = sinon.spy(eventA, 'consume');
             await app.dispatch(eventA);
-            expect(fakeA.callCount).to.be.eq(2);        // consumed twice, after return from layer and end of flow
+            expect(spyA.callCount).to.be.eq(1);        // consumed once, at end of flow because untouched by layers
+            expect(spyLayerB.callCount).to.be.eq(2);
 
             const eventB = new GoodEvent({});
-            const fakeB = sinon.fake.resolves(null);
-            sinon.replace(eventB, 'consume', fakeB);
+            const spyB = sinon.spy(eventB, 'consume');
             await app.dispatch(eventB);
-            expect(fakeB.callCount).to.be.eq(1);        // consumed once, at end of flow because untouched by layers
+            expect(spyB.callCount).to.be.eq(1);        // consumed once, by the FilteringLayer
         });
 
         it('should notify Layers on shutdown', async () => {
