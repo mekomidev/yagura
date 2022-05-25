@@ -31,6 +31,14 @@ export class Yagura {
 
         // Dispatch start event
         await app.dispatch(new AppEvent(AppEventType.start));
+
+        // Drain pre-init queue
+        while(app._dispatchQueue.length > 0) {
+            const ev = app._dispatchQueue.pop();
+            try { await app.dispatch(ev); }
+            catch(err) { await app.handleError(err); }
+        }
+
         return app;
     }
 
@@ -75,9 +83,12 @@ export class Yagura {
     /*
      *  Event subsystem
      */
+    private _dispatchQueue: YaguraEvent[] = [];
     public async dispatch(event: YaguraEvent): Promise<void> {
         if (!this._isInit) {
-            throw new Error('dispatch method called before initialize');
+            this.logger.warn('[EVENT] Dispatch method called before initialize, queued for later');
+            this._dispatchQueue.push(event);
+            return null;
         }
 
         this.logger.debug(`[EVENT] Dispatched event ${event.constructor.name}#${event.id}`);
@@ -118,7 +129,7 @@ export class Yagura {
             } catch (e) {
                 this.logger.verbose('[EVENT] flow errored');
                 try {
-                    await layer.handleError(e);
+                    await layer.handleError(e instanceof Error ? e : new Error((e as object).toString()));
                 } catch (e2) {
                     await this.handleError(e2);
                 }
@@ -263,7 +274,7 @@ export class Yagura {
         return mod; // this.getServiceProxy(mod.name);
     }
 
-    public async handleError(e: Error | YaguraError) {
+    public async handleError(e: any | Error | YaguraError) {
         if (!this._isInit) {
             console.warn(`Error occurred during initialization`);
             console.error(e);
@@ -277,8 +288,14 @@ export class Yagura {
             let err: YaguraError;
             if (e instanceof YaguraError) {
                 err = e;
-            } else {
+            } else if(e instanceof Error) {
                 err = new YaguraError(e);
+            } else if (typeof e === 'string') {
+                err = new YaguraError(e);
+            } else if(typeof e === 'object' || typeof e === 'number') {
+                err = new YaguraError(`Error: ${(e as object).toString()}`)
+            } else {
+                err = new YaguraError('Unknown error thrown');
             }
 
             // Check if event was handled already
@@ -288,7 +305,7 @@ export class Yagura {
                 err.guard.flagHandled();
             }
 
-            await this.getService<ErrorHandler>('ErrorHandler').handle(e);
+            await this.getService<ErrorHandler>('ErrorHandler').handle(err);
         } catch (err) {
             console.error(`FAILED TO HANDLE ERROR\n${(err as Error).stack.toString()}`);
         }
