@@ -445,6 +445,27 @@ describe('Framework', () => {
 
             expect(fake.callCount).to.be.eq(0);
         });
+
+        it('should queue events dispatched before initialization and dispatch them later', async () => {
+            class DummyPrematureService extends Service {
+                public async onInitialize(): Promise<void> {
+                    const ev = new DummyEvent('hello');
+                    const np = this.yagura.dispatch(ev);
+                    // Expect the event to not be consumed right after dispatch
+                    expect(ev.wasConsumed).to.be.eq(false);
+                }
+            }
+
+            const layer1 = new DummyNaiveConsumerLayer();
+            const fake = sinon.fake.resolves(null);
+            sinon.replace(layer1, 'handleEvent', fake);
+
+            const service1 = new DummyPrematureService('Premature', 'Dummy');
+            const app = await Yagura.start([layer1], [service1]);
+
+            // Expect the layer to receive 2 events: "start" event, and DummyEvent from serivce's init
+            expect(fake.callCount).to.be.eq(2);
+        });
     });
 
     describe('Error handling', () => {

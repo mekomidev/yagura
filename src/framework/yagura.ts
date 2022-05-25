@@ -31,6 +31,14 @@ export class Yagura {
 
         // Dispatch start event
         await app.dispatch(new AppEvent(AppEventType.start));
+
+        // Drain pre-init queue
+        while(app._dispatchQueue.length > 0) {
+            const ev = app._dispatchQueue.pop();
+            try { await app.dispatch(ev); }
+            catch(err) { await app.handleError(err); }
+        }
+
         return app;
     }
 
@@ -75,9 +83,12 @@ export class Yagura {
     /*
      *  Event subsystem
      */
+    private _dispatchQueue: YaguraEvent[] = [];
     public async dispatch(event: YaguraEvent): Promise<void> {
         if (!this._isInit) {
-            throw new Error('dispatch method called before initialize');
+            this.logger.warn('[EVENT] Dispatch method called before initialize, queued for later');
+            this._dispatchQueue.push(event);
+            return null;
         }
 
         this.logger.debug(`[EVENT] Dispatched event ${event.constructor.name}#${event.id}`);
