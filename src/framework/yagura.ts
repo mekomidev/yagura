@@ -115,9 +115,9 @@ export class Yagura {
                 const output = await layer.handleEvent(event);
                 if (!output) {                                                  // null output implies consumed event
                     if(!event.wasConsumed) {                                    // ensure event consumed
+                        this.logger.verbose('[EVENT] event implicitly consumed, consuming post-layer');
                         await event.consume();
                     }
-                    this.logger.verbose('[EVENT] event implicitly consumed, consuming post-layer');
                     break;                                                      // stop event flow when event consumed
                 } else if(event.wasConsumed) {
                     this.logger.verbose('[EVENT] event explicitly consumed');
