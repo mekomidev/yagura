@@ -37,7 +37,7 @@ export abstract class YaguraEvent {
 
     /** @returns a SHA256 hash of the @member data member */
     public getHash(): string {
-        return createHash('sha256').update(this.data.toString()).digest('hex');
+        return createHash('sha256').update((this.data as object).toString()).digest('hex');
     }
 
     public toString(): string {
@@ -95,7 +95,7 @@ export function eventFilter(filter: typeof YaguraEvent[] | EventFilter) {
                 const args = arguments;
 
                 // Call filter
-                if (filterFunction(args[0])) {
+                if (filterFunction(args[0] as YaguraEvent)) {
                     return await original.apply(context, args);
                 } else {
                     return null;
