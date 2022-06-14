@@ -116,6 +116,7 @@
         "no-fallthrough": "off",
         "no-invalid-this": "off",
         "no-new-wrappers": "warn",
+        "no-prototype-builtins": "error",
         "no-shadow": "off",
         "no-throw-literal": "warn",
         "no-trailing-spaces": "warn",

@@ -213,7 +213,7 @@ export class Yagura {
             },
             set: (o, key, value) => {
                 const service: M = app.getService(name, vendor);
-                if(Object(service).hasOwnProperty(key)) {
+                if(Object.prototype.hasOwnProperty.call(service, key)) {
                     service[key] = value;
                     return true;
                 } else {
