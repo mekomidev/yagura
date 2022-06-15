@@ -2,7 +2,7 @@
 import { Yagura } from './framework/yagura';
 import { Layer } from './framework/layer';
 import { Service } from './framework/service';
-import { YaguraEvent, eventFilter } from './framework/event';
+import { Event, eventFilter } from './framework/event';
 
 import { YaguraError } from './utils/errors';
 import { promiseTimeout } from './utils/promise.utils';
@@ -16,7 +16,7 @@ export {
     Yagura,
     Layer,
     Service,
-    YaguraEvent,
+    Event,
     // Errors
     YaguraError,
     // Services

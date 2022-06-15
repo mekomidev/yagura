@@ -3,7 +3,7 @@ import { Service } from './service';
 import { YaguraError } from '../utils/errors';
 import { Logger, DefaultLogger } from '../services/logger.service';
 
-import { YaguraEvent } from './event';
+import { Event } from './event';
 import { AppEvent, AppEventType } from './app.event';
 
 import * as colors from 'colors/safe';
@@ -84,8 +84,8 @@ export class Yagura {
     /*
      *  Event subsystem
      */
-    private _dispatchQueue: YaguraEvent[] = [];
-    public async dispatch(event: YaguraEvent): Promise<void> {
+    private _dispatchQueue: Event[] = [];
+    public async dispatch(event: Event): Promise<void> {
         if (!this._isInit) {
             this.logger.warn('[EVENT] Dispatch method called before initialize, queued for later');
             this._dispatchQueue.push(event);

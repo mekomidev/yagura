@@ -1,4 +1,5 @@
 import { Service } from '../framework/service';
+import { Event } from '../framework/event';
 import 'colors';
 
 export abstract class Logger extends Service {

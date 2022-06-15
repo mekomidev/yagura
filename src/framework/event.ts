@@ -2,7 +2,7 @@ import { HandleGuard } from "../utils/handleGuard";
 import { createHash, randomBytes } from "crypto";
 import { YaguraError } from "..";
 
-export abstract class YaguraEvent {
+export abstract class Event {
     public readonly id: string;
     public data: any;
 
@@ -48,38 +48,38 @@ export abstract class YaguraEvent {
 }
 
 export interface EventHandler {
-    handleEvent(event: YaguraEvent): YaguraEvent | Promise<YaguraEvent>;
+    handleEvent(event: Event): Event | Promise<Event>;
 }
 
 /**
  * Event filter utility type;
  * To be used with the "@eventFilter" decorator
  */
-export type EventFilter = (event: YaguraEvent) => boolean;
+export type EventFilter = (event: Event) => boolean;
 
 /**
  * Event filtering decorator factory;
- * Given an array of YaguraEvent subclasses or a EventFilter function,
+ * Given an array of Event subclasses or a EventFilter function,
  * allows the decorated method to handle only the allowed events, passing others to the next layer in the flow.
  *
  * Use this in your Layer to reduce event processing overhead.
  *
  * Example: "@eventFilter(HttpRequestEvent)" on handleEvent() of a HttpRouterLayer
  *
- * @param {(typeof YaguraEvent)[] | EventFilter} filter
+ * @param {(typeof Event)[] | EventFilter} filter
  */
-export function eventFilter(filter: typeof YaguraEvent[] | EventFilter) {
+export function eventFilter(filter: typeof Event[] | EventFilter) {
     if (filter instanceof Array) {
-        const allowedEvents: typeof YaguraEvent[] = filter;
+        const allowedEvents: typeof Event[] = filter;
 
-        return function(target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<YaguraEvent>>) {
+        return function(target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<Event>>) {
             const original = descriptor.value;
             descriptor.value = async function() {
                 const context = this;
                 const args = arguments;
 
                 // Call filter
-                if (allowedEvents.find((eventType: typeof YaguraEvent) => args[0] instanceof eventType )) {
+                if (allowedEvents.find((eventType: typeof Event) => args[0] instanceof eventType )) {
                     return await original.apply(context, args);
                 } else {
                     return args[0];
@@ -88,14 +88,14 @@ export function eventFilter(filter: typeof YaguraEvent[] | EventFilter) {
         };
     } else if (filter instanceof Function) {
         const filterFunction: EventFilter = filter;
-        return function(target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<YaguraEvent>>) {
+        return function(target: any, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<Event>>) {
             const original = descriptor.value;
             descriptor.value = async function() {
                 const context = this;
                 const args = arguments;
 
                 // Call filter
-                if (filterFunction(args[0] as YaguraEvent)) {
+                if (filterFunction(args[0] as Event)) {
                     return await original.apply(context, args);
                 } else {
                     return null;
