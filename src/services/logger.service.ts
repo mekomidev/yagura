@@ -8,11 +8,16 @@ export abstract class Logger extends Service {
     }
 
     // TODO: review which logging level standard to adopt, like POSIX, Winston, etc.
-    public abstract error(text: any): void;
-    public abstract warn(text: string): void;
-    public abstract info(text: string): void;
-    public abstract debug(text: string): void;
-    public abstract verbose(text: string): void;
+    /**
+     * 
+     * @param text Log message
+     * @param {Event} event Yagura Event provided as context
+     */
+    public abstract error(text: any, event?: Event): void;
+    public abstract warn(text: string, event?: Event): void;
+    public abstract info(text: string, event?: Event): void;
+    public abstract debug(text: string, event?: Event): void;
+    public abstract verbose(text: string, event?: Event): void;
 }
 
 /**
