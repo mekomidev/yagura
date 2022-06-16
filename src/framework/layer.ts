@@ -1,6 +1,6 @@
 import { deepFreeze } from '../utils/objectUtils';
 import { YaguraError } from '../utils/errors';
-import { YaguraEvent, EventHandler } from './event';
+import { Event, EventHandler } from './event';
 import { Yagura } from './yagura';
 
 export interface Layer {
@@ -37,9 +37,9 @@ export abstract class Layer implements EventHandler {
     /**
      * Handles incoming events
      *
-     * @returns {YaguraEvent} event to be handled by the underlying layers; if null, the handling loop stops for that event
+     * @returns {Event} event to be handled by the underlying layers; if null, the handling loop stops for that event
      */
-    public abstract handleEvent(e: YaguraEvent): Promise<YaguraEvent>;
+    public abstract handleEvent(e: Event): Promise<Event>;
 
     /**
      * Called whenever an unhandled error is thrown in the app.

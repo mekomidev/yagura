@@ -22,10 +22,11 @@ describe('Utils', () => {
     });
 
     describe('promiseTimeout function', () => {
-        const promiseTime: number = 100;
+        const promiseTime: number = 200;
         const promiseTimeoutMargin: number = 0.5;
-        const promiseFunc: ()=>Promise<string> = async () => new Promise((resolve) => {
-            setTimeout(() => { resolve('hello') }, promiseTime);
+        const promiseFunc: () => Promise<string> = async () => new Promise((resolve) => {
+            const t = setTimeout(() => { resolve('hello') }, promiseTime);
+            t.unref();
         });
 
         it('should resolve promise before timeout', async () => {

@@ -1,6 +1,6 @@
 {
     "name": "@yagura/yagura",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "A solid, event-based layered web framework - written in TypeScript for Node.js",
     "main": "lib/js/index.js",
     "types": "lib/declarations/index.d.ts",
@@ -8,7 +8,7 @@
         "clean": "rm -rf ./lib",
         "build": "./node_modules/typescript/bin/tsc -p tsconfig.build.json",
         "lint": "eslint src/ && eslint test/",
-        "test": "eslint src/ && TS_NODE_PROJECT=\"tsconfig.json\" NODE_ENV=test nyc --reporter=lcov --reporter=text-summary mocha -s 1 -r ts-node/register ./test/**/*.test.ts",
+        "test": "eslint src/ && TS_NODE_PROJECT=\"tsconfig.json\" NODE_ENV=test nyc --reporter=lcov --reporter=text-summary mocha --timeout 30000 -s 1 -r ts-node/register ./test/**/*.test.ts",
         "release": "npm run test && npm run clean && npm run build && npm publish"
     },
     "files": [
@@ -23,12 +23,12 @@
         "url": "https://github.com/mekomidev/yagura.git"
     },
     "engines": {
-        "node": ">=12.0.0"
+        "node": ">=16.0.0"
     },
     "devDependencies": {
-        "@types/node": "^12.0.0",
         "@types/chai": "^4.3.1",
         "@types/mocha": "^9.1.1",
+        "@types/node": "^16.0.0",
         "@types/sinon": "^10.0.11",
         "@typescript-eslint/eslint-plugin": "^5.26.0",
         "@typescript-eslint/parser": "^5.26.0",
@@ -41,11 +41,10 @@
         "mocha": "^9.1.1",
         "nyc": "^15.1.0",
         "sinon": "^10.0.0",
-        "ts-node": "^9.1.1",
-        "typescript": "^4.7.2"
+        "ts-node": "^10.8.0",
+        "typescript": "^4.7.3"
     },
     "dependencies": {
-        "colors": "^1.4.0",
-        "config": "^3.3.7"
+        "colors": "^1.4.0"
     }
 }

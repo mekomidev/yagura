@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/require-await */
-import { Yagura, Layer, Service, YaguraEvent, YaguraError, ErrorHandler, eventFilter } from '../src';
+import { Yagura, Layer, Service, Event, YaguraError, ErrorHandler, eventFilter } from '../src';
 import { AppEvent, AppEventType } from '../src/framework/app.event';
 
 import 'mocha';
@@ -192,7 +192,7 @@ describe('Framework', () => {
                 super({});
             }
 
-            public async handleEvent(e: YaguraEvent): Promise<YaguraEvent> {
+            public async handleEvent(e: Event): Promise<Event> {
                 return null;
             }
         }
@@ -211,7 +211,7 @@ describe('Framework', () => {
         });
 
         it('should pass events through layers according to their declaration order', async () => {
-            class CounterEvent extends YaguraEvent {
+            class CounterEvent extends Event {
                 public counter: number = 0;
                 protected async onConsumed() {
                     expect(this.counter).to.be.eq(2);
@@ -241,11 +241,11 @@ describe('Framework', () => {
         });
 
         it('should filter Events when eventFilter decorator is applied', async () => {
-            class GoodEvent extends YaguraEvent {}
-            class BadEvent extends YaguraEvent {}
+            class GoodEvent extends Event {}
+            class BadEvent extends Event {}
             class FirstFilteringLayer extends Layer {
                 @eventFilter([GoodEvent])
-                public async handleEvent(event: YaguraEvent): Promise<YaguraEvent> {
+                public async handleEvent(event: Event): Promise<Event> {
                     expect(event).to.not.be.instanceOf(BadEvent);
                     if(event instanceof GoodEvent)
                         await event.consume();
@@ -255,7 +255,7 @@ describe('Framework', () => {
             }
             class SecondFilteringLayer extends Layer {
                 @eventFilter([BadEvent])
-                public async handleEvent(event: YaguraEvent): Promise<YaguraEvent> {
+                public async handleEvent(event: Event): Promise<Event> {
                     expect(event).to.be.instanceOf(BadEvent);
                     if(event instanceof BadEvent)
                         await event.consume();
@@ -324,7 +324,7 @@ describe('Framework', () => {
                 super({});
             }
 
-            public async handleEvent(e: YaguraEvent): Promise<YaguraEvent> {
+            public async handleEvent(e: Event): Promise<Event> {
                 return null;
             }
         }
@@ -334,12 +334,12 @@ describe('Framework', () => {
                 super({});
             }
 
-            public async handleEvent(e: YaguraEvent): Promise<YaguraEvent> {
+            public async handleEvent(e: Event): Promise<Event> {
                 await e.consume();
                 return e;
             }
         }
-        class DummyEvent extends YaguraEvent {
+        class DummyEvent extends Event {
             public dummyField: any;
 
             public constructor(data: any) {
@@ -489,7 +489,7 @@ describe('Framework', () => {
                 console.log('hello');
             }
 
-            public handleEvent(e: YaguraEvent): Promise<YaguraEvent> {
+            public handleEvent(e: Event): Promise<Event> {
                 console.log('hello');
                 return null;
             }
