@@ -1,7 +1,6 @@
 
-import { Config, Yagura } from './yagura';
+import { Yagura } from './yagura';
 import { YaguraError } from '../utils/errors';
-import { deepFreeze } from '../utils/objectUtils';
 
 export interface Service {
     /** Called when the Service is being registered */
@@ -11,12 +10,10 @@ export interface Service {
 export abstract class Service {
     public readonly vendor: string;
     public readonly name: string;
-    public readonly config: Config;
 
-    constructor(name: string, vendor: string, config?: Config) {
+    constructor(name: string, vendor: string) {
         this.vendor = vendor;
         this.name = name;
-        if(!!config) this.config = deepFreeze(JSON.parse(JSON.stringify(config)));
     }
 
     protected yagura: Yagura;

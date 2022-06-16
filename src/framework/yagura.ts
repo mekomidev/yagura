@@ -9,11 +9,6 @@ import { AppEvent, AppEventType } from './app.event';
 import * as colors from 'colors/safe';
 import { DefaultErrorHandler, ErrorHandler } from '../services/errorHandler.service';
 
-export type ConfigValueType = number | boolean | string | ConfigValueType[];
-export type Config = {
-    [key: string]: ConfigValueType | Config | Config[];
-};
-
 export class Yagura {
     private _isInit: boolean;
     private _stack: Layer[];

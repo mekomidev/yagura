@@ -1,5 +1,5 @@
 // Framework APIs
-import { Yagura, Config, ConfigValueType } from './framework/yagura';
+import { Yagura } from './framework/yagura';
 import { Layer } from './framework/layer';
 import { Service } from './framework/service';
 import { Event, eventFilter } from './framework/event';
@@ -29,6 +29,5 @@ export {
     Logger, DefaultLogger, LogLevel,
     ErrorHandler, DefaultErrorHandler,
     // Utils
-    eventFilter, promiseTimeout, HandleGuard,
-    Config, ConfigValueType,
+    eventFilter, promiseTimeout, HandleGuard
 };

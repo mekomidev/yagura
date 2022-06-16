@@ -1,7 +1,7 @@
 import { deepFreeze } from '../utils/objectUtils';
 import { YaguraError } from '../utils/errors';
 import { Event, EventHandler } from './event';
-import { Config, Yagura } from './yagura';
+import { Yagura } from './yagura';
 
 export interface Layer {
     /** Called when the app is being initialized */
@@ -10,14 +10,15 @@ export interface Layer {
 
 export abstract class Layer implements EventHandler {
     public readonly name: string;
-    public readonly config: Config;
+
+    public readonly config: any;
 
     /**
      * Initializes the Layer
      *
      * @param {any} config Layer configuration object. Should be a plain JSON object, any functions will be excluded
      */
-    constructor(config?: Config) {
+    constructor(config?: any) {
         // Deep copy config (this excludes functions!) and deep freeze it
         if(!!config) this.config = deepFreeze(JSON.parse(JSON.stringify(config)));
     }
