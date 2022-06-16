@@ -17,6 +17,12 @@ export {
     Layer,
     Service,
     Event,
+    /**
+     * Alias for Event, added for backwards compatibility
+     *
+     * @deprecated
+     * */
+    Event as YaguraEvent,
     // Errors
     YaguraError,
     // Services
