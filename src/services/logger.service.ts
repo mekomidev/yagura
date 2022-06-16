@@ -2,7 +2,19 @@ import { Service } from '../framework/service';
 import { Event } from '../framework/event';
 import 'colors';
 
-export abstract class Logger extends Service {
+export enum LogLevel {
+    error = 'error',
+    warn = 'warn',
+    info = 'info',
+    debug = 'debug',
+    verbose = 'verbose',
+}
+
+type AbstractLogger = {
+    [Key in LogLevel]: (x: any) => void;
+}
+
+export abstract class Logger extends Service implements AbstractLogger {
     constructor(vendor: string) {
         super('Logger', vendor);
     }

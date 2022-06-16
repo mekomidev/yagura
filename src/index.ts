@@ -8,7 +8,7 @@ import { YaguraError } from './utils/errors';
 import { promiseTimeout } from './utils/promise.utils';
 import { HandleGuard } from './utils/handleGuard';
 
-import { Logger, DefaultLogger } from './services/logger.service';
+import { Logger, DefaultLogger, LogLevel } from './services/logger.service';
 import { ErrorHandler, DefaultErrorHandler } from './services/errorHandler.service';
 
 export {
@@ -26,7 +26,7 @@ export {
     // Errors
     YaguraError,
     // Services
-    Logger, DefaultLogger,
+    Logger, DefaultLogger, LogLevel,
     ErrorHandler, DefaultErrorHandler,
     // Utils
     eventFilter, promiseTimeout, HandleGuard
